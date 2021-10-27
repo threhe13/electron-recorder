@@ -1,15 +1,17 @@
 # electron-dev
 Desktop Application included Speech Enhancement Model
-> reference
-> Github : <https://github.com/haoxiangsnr/FullSubNet>
+> reference<br>
+> Github : <https://github.com/haoxiangsnr/FullSubNet><br>
 > Electron : <https://www.electronjs.org>
 
 ### Develop Environment
 1. MacOS(Big Sur)
 2. VS Code
 
-### install npm, nodejs
-<code>
-    brew install npm node
-</code>
+### installed
+<pre>
+    <code>
+        brew install npm node
+    </code>
+</pre>
 
