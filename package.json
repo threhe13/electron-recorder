@@ -1,8 +1,20 @@
 {
+  "name": "electron-dev",
+  "version": "0.0.1",
+  "description": "develop",
+  "main": "main.js",
+  "author": "SungHyun Kim",
+  "license": "MIT",
+
+  "scripts": {
+    "start": "electron ."
+  },
   "devDependencies": {
     "electron": "^15.3.0"
   },
   "dependencies": {
     "electron-is-dev": "^2.0.0"
   }
+
+  
 }

@@ -2,7 +2,7 @@
 Desktop Application included Speech Enhancement Model<br>
 ## Reference
 > Speech Enhancement Model<br>
-> - Github : <https://github.com/haoxiangsnr/FullSubNet><br>
+> - Github : <a href="https://github.com/haoxiangsnr/FullSubNet" target="_blank">FullSubNet</a><br>
 
 > Desktop Application<br>
 > - Electron : <https://www.electronjs.org><br>
@@ -17,9 +17,14 @@ Desktop Application included Speech Enhancement Model<br>
 ### How to Start
 <code>brew install node</code><br>
 <code>npm install electron --save-dev</code><br>
-also can use <code>electron-quick-start</code> uploaded <a href=https://github.com/electron/electron-quick-start>github</a>
+Also can use <code>electron-quick-start</code> uploaded at <a href="https://github.com/electron/electron-quick-start" target="_blank">Github</a>
 
 # Information
-- process : main, renderer
+- process : main(Backend), renderer(Frontend)
 - communication module : ipcMain, ipcRenderer, remote
 
+# Requirement
+- node
+- npm
+- electron(15.3.0)
+- electron-is-dev(2.0.0) <code>npm install electron-is-dev</code>
