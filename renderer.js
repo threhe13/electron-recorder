@@ -1,6 +1,10 @@
-const NOTIFICATION_TITLE = 'Electron-Dev'
-const NOTIFICATION_BODY = 'Notification from the Renderer process.'
+// const NOTIFICATION_TITLE = 'Electron-Dev'
+// const NOTIFICATION_BODY = 'Notification from the Renderer process.'
 
-function showNotification(){
-    new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).show()
-}
+//Notification Function
+window.showNotification('앱이 실행되었습니다.')
+
+// record.onclick = function() {
+//     mediaRecorder.start();
+//     console.log("recorder started");
+//   }

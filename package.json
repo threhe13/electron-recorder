@@ -5,7 +5,6 @@
   "main": "main.js",
   "author": "SungHyun Kim",
   "license": "MIT",
-
   "scripts": {
     "start": "electron ."
   },
@@ -13,8 +12,7 @@
     "electron": "^15.3.0"
   },
   "dependencies": {
+    "electron-builder": "^22.13.1",
     "electron-is-dev": "^2.0.0"
   }
-
-  
 }

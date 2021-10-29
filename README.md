@@ -2,7 +2,7 @@
 Desktop Application included Speech Enhancement Model<br>
 ## Reference
 > Speech Enhancement Model<br>
-> - Github : <a href="https://github.com/haoxiangsnr/FullSubNet" target="_blank">FullSubNet</a><br>
+> - Github : <a href="https://github.com/haoxiangsnr/FullSubNet" target="_blank">FullSubNet</a><br> (tf.ver)
 
 > Desktop Application<br>
 > - Electron : <https://www.electronjs.org><br>

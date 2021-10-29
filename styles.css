@@ -11,3 +11,35 @@
         color: black; 
     }
 }
+
+body {
+    overflow: hidden;
+}
+
+.title {
+    width: 100%;
+    left: calc(50% - 50px);
+    position: relative;
+}
+
+.title-content {
+    width: 100px;
+    text-align: center;
+}
+
+.body {
+    position: relative;
+    width: 100%;
+}
+
+.audio {
+    display: block; 
+    position: relative; 
+    width: inherit;
+    height: 257px; 
+    overflow: auto hidden;
+    /*Don't Touch*/
+    -webkit-user-select: none; 
+    user-select: none;
+}
+
