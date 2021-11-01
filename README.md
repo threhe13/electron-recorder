@@ -34,3 +34,5 @@ Also can use <code>electron-quick-start</code> uploaded on <a href="https://gith
 - npm
 - electron@15.3.0
 - electron-is-dev@2.0.0 <code>npm install electron-is-dev</code>
+- electron-builder@22.13.1 <code>npm install electron-builder</code>
+- wavesurfer.js@5.2.0 <code>npm install wavesurfer.js --save</code>
