@@ -35,9 +35,9 @@ function createWindow(){
     // win.loadFile('index.html')
     
     // open DevTool for using
-    // if (isDev) {
-    //     win.webContents.openDevTools()
-    // }
+    if (isDev) {
+        win.webContents.openDevTools()
+    }
     // event when window closed
     win.on('closed', () => {
         win = null
@@ -50,12 +50,24 @@ function createWindow(){
     const access = systemPreferences.askForMediaAccess('microphone')
     console.log(access)
 
-    
 
 }
 
 /* Electron */
-app.whenReady().then(createWindow)
+app.whenReady().then(createWindow).then(() => {
+    if (process.platform === 'darwin') {
+        // Let's get the recent places
+        const places = systemPreferences.getUserDefault('NSNavRecentPlaces', 'array')
+        console.log(places)
+    }
+    
+    if (process.platform === 'win32') {
+        // As an example, let's get the accent color of
+        // the users current theme
+        const accentColor = systemPreferences.getAccentColor()
+        console.log(accentColor)
+    }
+})
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

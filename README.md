@@ -2,22 +2,20 @@
 Desktop Application included Speech Enhancement Model<br>
 ## Reference
 > Speech Enhancement Model<br>
-> - Github : <a href="https://github.com/haoxiangsnr/FullSubNet" target="_blank">FullSubNet</a><br> (tf.ver)
+> - Github : <a href="https://github.com/haoxiangsnr/FullSubNet" target="_blank">FullSubNet</a> (tensorflow)<br> 
 
 > Desktop Application<br>
-> - Electron : <https://www.electronjs.org><br>
-> - <https://velog.io/@altmshfkgudtjr/Electron-설치-및-초기설정>
-> - <https://hsoh1990.github.io/2019/01/18/electron-tutorial/>
+> - Electron : <a href="https://www.electronjs.org" target="_blank">Electron.org</a><br>
 
 ### Develop Environment
-1. MacOS(Big Sur, <code>Intel</code>)
-2. VS Code
-3. Vue.js vs React.js vs Vanila JS
+1. MacOS(~~Big Sur~~ Monterey, <code>Intel</code>)
+2. Visual Studio Code
+3. Vanila JS
 
 ### How to Start
 <code>brew install node</code><br>
 <code>npm install electron --save-dev</code><br>
-Also can use <code>electron-quick-start</code> uploaded at <a href="https://github.com/electron/electron-quick-start" target="_blank">Github</a>
+Also can use <code>electron-quick-start</code> uploaded on <a href="https://github.com/electron/electron-quick-start" target="_blank">Github</a>
 
 # Information
 - process : main(Backend), renderer(Frontend)
@@ -26,5 +24,5 @@ Also can use <code>electron-quick-start</code> uploaded at <a href="https://gith
 # Requirement
 - node
 - npm
-- electron(15.3.0)
-- electron-is-dev(2.0.0) <code>npm install electron-is-dev</code>
+- electron@15.3.0
+- electron-is-dev@2.0.0 <code>npm install electron-is-dev</code>

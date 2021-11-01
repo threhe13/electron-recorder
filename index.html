@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>Electron-Dev</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
-    <link rel="stylesheet" type="text/css" href="./styles.css">
-</head>
-<body>
-  <div class="title">
-    <h1 class="title-content">Recoder</h1>
-  </div>
-  <div class="body">
-    <!--Sound Image-->
-    <wave class="audio">
-      <wave class="audio-wave">
-        
+  <head>
+      <meta charset="UTF-8">
+      <title>Electron-Dev</title>
+      <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
+      <link rel="stylesheet" type="text/css" href="./styles.css">
+  </head>
+  <body>
+    <div class="title">
+      <h1 class="title-content">Recoder</h1>
+    </div>
+    <div class="body">
+      <!--Sound Image-->
+      <wave class="audio">
+        <wave class="audio-wave">
+          
+        </wave>
       </wave>
-    </wave>
+      
+      <video id="camera" autoplay></video>
 
-  </div>
-  <div class="footer">
+    </div>
+    <div class="footer">
 
-  </div>
+    </div>
 
 
-</body>
-<script src="renderer.js"></script>
+  </body>
+  <script src="renderer.js"></script>
 </html>
