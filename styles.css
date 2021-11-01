@@ -16,6 +16,20 @@ body {
     overflow: hidden;
 }
 
+button#record {
+    border-style: none;
+    border-color: white;
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: auto;
+}
+
+img {
+    width: 50px;
+    height: auto;
+}
+
 .title {
     width: 100%;
     left: calc(50% - 50px);
@@ -32,14 +46,7 @@ body {
     width: 100%;
 }
 
-.audio {
-    display: block; 
-    position: relative; 
-    width: inherit;
-    height: 257px; 
-    overflow: auto hidden;
-    /*Don't Touch*/
-    -webkit-user-select: none; 
+#microphone {
     user-select: none;
+    left: calc(50% - 150px);
 }
-

@@ -1,11 +1,19 @@
 # Electron-dev
 Desktop Application included Speech Enhancement Model<br>
+
+<p align="center">
+    <span>Example Image</span><br>
+    <img src="./assets/images/demo1.png" alt="demo image" width="480px">
+</p>
+
 ## Reference
 > Speech Enhancement Model<br>
 > - Github : <a href="https://github.com/haoxiangsnr/FullSubNet" target="_blank">FullSubNet</a> (tensorflow)<br> 
 
 > Desktop Application<br>
 > - Electron : <a href="https://www.electronjs.org" target="_blank">Electron.org</a><br>
+> - WaveForm : <a href="https://wavesurfer-js.org/" target="_black">Wavesurfer.js</a>
+> - Images : <a href="https://www.flaticon.com/" target="_blank">Flaticon</a>
 
 ### Develop Environment
 1. MacOS(~~Big Sur~~ Monterey, <code>Intel</code>)

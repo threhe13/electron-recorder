@@ -11,7 +11,7 @@ function createWindow(){
     // make browser window
     const win = new BrowserWindow(
         {
-            width: 400,
+            width: 800,
             height: 600,
             resizable: true,
             webPreferences: {
@@ -49,25 +49,10 @@ function createWindow(){
     console.log(status)
     const access = systemPreferences.askForMediaAccess('microphone')
     console.log(access)
-
-
 }
 
 /* Electron */
-app.whenReady().then(createWindow).then(() => {
-    if (process.platform === 'darwin') {
-        // Let's get the recent places
-        const places = systemPreferences.getUserDefault('NSNavRecentPlaces', 'array')
-        console.log(places)
-    }
-    
-    if (process.platform === 'win32') {
-        // As an example, let's get the accent color of
-        // the users current theme
-        const accentColor = systemPreferences.getAccentColor()
-        console.log(accentColor)
-    }
-})
+app.whenReady().then(createWindow)
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
