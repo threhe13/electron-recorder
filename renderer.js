@@ -7,6 +7,8 @@
 // need to select mic type
 const audio = document.getElementById('microphone')
 const record_btn = document.getElementById('record')
-record_btn.onclick = recorder //=> audio.onchange = waveVisualize(audio.src)
+const waveform = document.getElementById('waveform')
+record_btn.addEventListener('click', recorder)
 
 //visualization function
+audio.addEventListener('loadeddata', function(){waveVisualize(audio.src)})

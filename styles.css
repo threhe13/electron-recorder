@@ -14,9 +14,11 @@
 
 body {
     overflow: hidden;
+    margin: 0 auto;
 }
 
 button#record {
+    padding: 0%;
     border-style: none;
     border-color: white;
     color: white;
@@ -49,4 +51,9 @@ img {
 #microphone {
     user-select: none;
     left: calc(50% - 150px);
+}
+
+#waveform {
+    width: 400px;
+    height: 128px;
 }

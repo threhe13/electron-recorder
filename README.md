@@ -3,7 +3,7 @@ Desktop Application included Speech Enhancement Model<br>
 
 <p align="center">
     <span>Example Image</span><br>
-    <img src="./assets/images/demo1.png" alt="demo image" width="480px">
+    <img src="./assets/images/demo2.png" alt="demo image" width="480px">
 </p>
 
 ## Reference

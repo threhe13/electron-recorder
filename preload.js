@@ -8,32 +8,47 @@ contextBridge.exposeInMainWorld('showNotification', (contents) => {
             body: contents,
         }
     );
-    noti.show();
+    noti.show(); // notification error... noti.show() is not function?
 })
 
 // audio analyser
 contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
+    // Delete previous waveform
+    const waveform = document.getElementById('waveform')
+    if(waveform.childElementCount > 0){
+        const child = waveform.children[0]
+        waveform.removeChild(child)
+    }
+
+    // Current Waveform
     const wavesurfer = WaveSurfer.create({
         container: "#waveform",
-        waveColor: "violet",
-        progressColor: "purple",
+        waveColor: "#1D201F",
+        progressColor: "#C58882",
+        height: 128,
+        normalize: true,
     })
 
+    // wave visualization
     wavesurfer.load(wave)
+
+    // Need to add connect option with player play/pause button
+    // const audio = documnet.getElementById('microphone')
+    // audio.addEventListener('play', wavesurfer.play)
+    // audio.addEventLIstener('puase', wavesurfer.stop)
 })
 
 contextBridge.exposeInMainWorld('recorder', () => {
     const record_btn = document.getElementById('record')    
-    const constraints = {audio: true}
+    const constraints = {audio: true} // Receive only audio when running stream
 
-    const btn = document.getElementById('record-status')
-    let record_state = btn.alt
-    console.log(record_state)
+    // start, stop image
+    const btn_img = document.getElementById('record-status')
 
-    if(record_state == "start"){ //start record
+    if(btn_img.alt == "start"){ //start record
         //Visualize record state
-        btn.src = "./assets/images/stop.png"
-        btn.alt = "stop" // Status
+        btn_img.src = "./assets/images/stop.png"
+        btn_img.alt = "stop" // Status
 
         // Record
         const wave = navigator.mediaDevices.getUserMedia(constraints)
@@ -41,18 +56,17 @@ contextBridge.exposeInMainWorld('recorder', () => {
             const mediaRecorder = new MediaRecorder(stream)
 
             mediaRecorder.start()
-            console.log("Recording...")
+            console.log("Recording...") // for debug
 
-            record_btn.onclick = function(){
+            record_btn.addEventListener('click', function(){
 
-                btn.src = "./assets/images/record.png"
-                btn.alt = "start" // Status
-                mediaRecorder.stop()
-                record_btn.removeEventListener("click", this)
+                btn_img.src = "./assets/images/record.png"
+                btn_img.alt = "start" // Status
+                mediaRecorder.stop() //Stop recording
                 console.log("Stop Recording")
 
+                // Load Recording file on player
                 var chunks = [];
-
                 mediaRecorder.onstop = function(e) {
                     console.log("data available after MediaRecorder.stop() called.");
                     var audio = document.getElementById('microphone')
@@ -60,12 +74,17 @@ contextBridge.exposeInMainWorld('recorder', () => {
                     var audioURL = window.URL.createObjectURL(blob);
                     audio.src = audioURL;
                     console.log("recorder stopped");
+
+                    // Exit Stream
+                    stream.getTracks().forEach(function(track){
+                        track.stop();
+                    })
                 }
 
                 mediaRecorder.ondataavailable = function(e){
                     chunks.push(e.data)
                 }
-            }
+            }, {once: true})
 
         })
         .catch(err => {
