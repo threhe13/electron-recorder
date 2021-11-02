@@ -6,9 +6,6 @@ Desktop Application included Speech Enhancement Model<br>
     <img src="./assets/images/demo4.png" alt="demo image" width="329px">
     <img src="./assets/images/demo_gif.gif" alt="demo video" width="320px">
 </p>
-<p align="center">
-    < image >　　　　　　　　　　　　　　　　　　　　　　　< video >
-</p>
 
 ## Reference
 > Speech Enhancement Model<br>

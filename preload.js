@@ -1,6 +1,7 @@
 const { contextBridge } = require('electron')
 const WaveSurfer = require('wavesurfer.js')
 
+// Notification Function
 contextBridge.exposeInMainWorld('showNotification', (contents) => {
     new Notification(
         "Electron-Dev",
@@ -8,10 +9,9 @@ contextBridge.exposeInMainWorld('showNotification', (contents) => {
             body: contents,
         }
     );
-    //noti.show(); // notification error... noti.show() is not function?
 })
 
-// audio analyser
+// Audio Visualization
 contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     // Delete previous waveform
     const waveform = document.getElementById('waveform')
@@ -20,7 +20,7 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
         waveform.removeChild(child)
     }
 
-    // Current Waveform
+    // Create New Waveform
     const wavesurfer = WaveSurfer.create({
         container: "#waveform",
         waveColor: "#1D201F",
@@ -37,16 +37,20 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     const audio = document.getElementById('microphone')
     audio.onplay = connectPlay
     audio.onpause = connectPause
+    audio.onended = connectPause
 
+    // if click player play button
     function connectPlay(){
         wavesurfer.play()
     }
 
+    // if click player pause button
     function connectPause(){
         wavesurfer.pause()
     }
 })
 
+// Record Function
 contextBridge.exposeInMainWorld('recorder', () => {
     const record_btn = document.getElementById('record')    
     const constraints = {audio: true} // Receive only audio when running stream
@@ -96,7 +100,7 @@ contextBridge.exposeInMainWorld('recorder', () => {
             }, {once: true})
 
         })
-        .catch(err => {
+        .catch(err => { // Stream error
             alert('Couldn\'t connect stream\n'+err)
         })
     }

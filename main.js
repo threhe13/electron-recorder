@@ -43,7 +43,7 @@ function createWindow(){
         win = null
     })
 
-    // Access Microphone
+    // Permission to Access Microphone
     // console.log(systemPreferences.getMediaAccessStatus('microphone')) // not determined -> NSMicrophone.. plist..
     const status = systemPreferences.getMediaAccessStatus('microphone')
     console.log(status)

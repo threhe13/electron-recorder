@@ -44,7 +44,7 @@ img {
 
 #microphone {
     user-select: none;
-    left: calc(50% - 150px);
+    text-align: center;
 }
 
 #waveform {
