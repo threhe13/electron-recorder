@@ -2,13 +2,13 @@ const { contextBridge } = require('electron')
 const WaveSurfer = require('wavesurfer.js')
 
 contextBridge.exposeInMainWorld('showNotification', (contents) => {
-    const noti = new Notification(
+    new Notification(
         "Electron-Dev",
         { 
             body: contents,
         }
     );
-    noti.show(); // notification error... noti.show() is not function?
+    //noti.show(); // notification error... noti.show() is not function?
 })
 
 // audio analyser
@@ -27,15 +27,24 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
         progressColor: "#C58882",
         height: 128,
         normalize: true,
+        interact: false,
     })
 
     // wave visualization
     wavesurfer.load(wave)
 
-    // Need to add connect option with player play/pause button
-    // const audio = documnet.getElementById('microphone')
-    // audio.addEventListener('play', wavesurfer.play)
-    // audio.addEventLIstener('puase', wavesurfer.stop)
+    // Connect wavesurfer option with player play/pause button
+    const audio = document.getElementById('microphone')
+    audio.onplay = connectPlay
+    audio.onpause = connectPause
+
+    function connectPlay(){
+        wavesurfer.play()
+    }
+
+    function connectPause(){
+        wavesurfer.pause()
+    }
 })
 
 contextBridge.exposeInMainWorld('recorder', () => {
