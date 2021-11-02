@@ -1,3 +1,9 @@
+/* Common */
+.contents {
+    width: 100%;
+    text-align: center;
+}
+
 @media (prefers-color-scheme: dark) {
     body { 
         background: #2f3437; 
@@ -13,36 +19,24 @@
 }
 
 body {
-    overflow: hidden;
     margin: 0 auto;
 }
 
-button#record {
-    padding: 0%;
-    border-style: none;
-    border-color: white;
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: auto;
-}
 
 img {
     width: 50px;
     height: auto;
 }
 
+/* Title */
 .title {
-    width: 100%;
-    left: calc(50% - 50px);
+    width: 400px;
+    text-align: center;
     position: relative;
 }
 
-.title-content {
-    width: 100px;
-    text-align: center;
-}
 
+/* Body(Core) */
 .body {
     position: relative;
     width: 100%;
@@ -56,4 +50,24 @@ img {
 #waveform {
     width: 400px;
     height: 128px;
+    padding-bottom: 10px;
+}
+
+/* Footer */
+.footer {
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+}
+
+button#record {
+    padding: 0%;
+    border-style: none;
+    border-color: white;
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
 }

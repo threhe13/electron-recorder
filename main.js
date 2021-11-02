@@ -34,7 +34,7 @@ function createWindow(){
     )
     // win.loadFile('index.html')
     
-    // open DevTool for using
+    // open DevTool option
     if (isDev) {
         win.webContents.openDevTools()
     }
