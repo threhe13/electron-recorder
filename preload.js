@@ -106,3 +106,4 @@ contextBridge.exposeInMainWorld('recorder', () => {
     }
 
 })
+

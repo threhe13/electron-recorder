@@ -28,6 +28,7 @@ audio.addEventListener('loadeddata', function(){
     // Add file uploaded on player to the list
     var newAudio = document.createElement('audio')
     newAudio.setAttribute('src', audio.src)
+    newAudio.setAttribute('visible', 'none') // set invisible
 
     
 })

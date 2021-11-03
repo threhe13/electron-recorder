@@ -28,6 +28,11 @@ img {
     height: auto;
 }
 
+ul {
+    list-style: none;
+    padding-left: 0px;
+}
+
 /* Title */
 .title {
     width: 400px;
