@@ -3,8 +3,9 @@ Desktop Application included Speech Enhancement Model<br>
 
 ## Demo
 <p align="center">
-    <img src="./assets/images/demo4.png" alt="demo image" width="329px">
-    <img src="./assets/images/demo_gif.gif" alt="demo video" width="320px">
+    <img src="./assets/images/demo5.png" alt="demo image" width="320px">
+    <img src="./assets/images/demo5_dark.png" alt="demo image" width="320px">
+    <!--<img src="./assets/images/demo_gif.gif" alt="demo video" width="320px">-->
 </p>
 
 ## Reference
@@ -12,8 +13,9 @@ Desktop Application included Speech Enhancement Model<br>
 > - Github : <a href="https://github.com/haoxiangsnr/FullSubNet" target="_blank">FullSubNet</a> (tensorflow)<br> 
 
 > Desktop Application<br>
-> - Electron : <a href="https://www.electronjs.org" target="_blank">Electron.org</a><br>
-> - WaveForm : <a href="https://wavesurfer-js.org/" target="_black">Wavesurfer.js</a>
+> - Electron : <a href="https://www.electronjs.org/" target="_blank">Electron.org</a><br>
+> - WaveForm : <a href="https://wavesurfer-js.org/" target="_blank">Wavesurfer.js</a>
+> - Tensorflow : <a href="https://www.tensorflow.org/js/" target="_blank">Tensorflow.js</a>
 > - Images : <a href="https://www.flaticon.com/" target="_blank">Flaticon</a>
 
 ### Develop Environment

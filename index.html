@@ -10,17 +10,17 @@
     <div class="title">
       <h1 class="title-content">Electron-Dev</h1>
     </div>
+    <div id="waveform"></div>
     <div class="body contents">
       <!--Sound Image-->
-      <div id="waveform"></div>
       <audio id="microphone" controls muted></audio>
-
-      <div class="list_overall" id="list_overall">
-        <!--Audio File List-->
-        <ul id="list">
-          
-        </ul>
-      </div>
+      <button type="button" class="btn" id="save" disabled>
+        <img src="./assets/images/download.png" alt="download" id="save-button">
+      </button>
+    </div>
+    <div class="list_overall">
+      <!--Audio File List-->
+      <ul id="list"></ul>
     </div>
     <div class="footer contents">
       <button id="record">

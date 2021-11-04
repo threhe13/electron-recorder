@@ -40,11 +40,19 @@ ul {
     position: relative;
 }
 
+#waveform {
+    width: 400px;
+    height: 128px;
+    padding-bottom: 10px;
+}
 
 /* Body(Core) */
 .body {
     position: relative;
     width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 }
 
 #microphone {
@@ -52,10 +60,38 @@ ul {
     text-align: center;
 }
 
-#waveform {
+button#save {
+    margin-left: 5px;
+    padding: 0%;
+    border-style: none;
+    border-color: white;
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+button#save > img {
+    width: 30px;
+    height: 30px;
+}
+
+.list_overall {
     width: 400px;
-    height: 128px;
+    height: 150px;
+    overflow-y: scroll;
+}
+
+.list_overall > #list {
+    text-align: center;
+}
+
+.list_overall > #list > .list_child {
+    padding-top: 10px;
     padding-bottom: 10px;
+    border-top: 2px solid #CED0CE;
+    border-bottom: 2px solid #CED0CE;
+    margin-top: -2px;
 }
 
 /* Footer */

@@ -1,4 +1,4 @@
-const { contextBridge } = require('electron')
+const { contextBridge, nativeTheme } = require('electron')
 const WaveSurfer = require('wavesurfer.js')
 
 // Notification Function
@@ -64,7 +64,7 @@ contextBridge.exposeInMainWorld('recorder', () => {
         btn_img.alt = "stop" // Status
 
         // Record
-        const wave = navigator.mediaDevices.getUserMedia(constraints)
+        const wave = navigator.mediaDevices.getUserMedia(constraints) //Docs
         .then(stream => {
             const mediaRecorder = new MediaRecorder(stream)
 
@@ -83,7 +83,7 @@ contextBridge.exposeInMainWorld('recorder', () => {
                 mediaRecorder.onstop = function(e) {
                     console.log("data available after MediaRecorder.stop() called.");
                     var audio = document.getElementById('microphone')
-                    var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+                    var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' }); //
                     var audioURL = window.URL.createObjectURL(blob);
                     audio.src = audioURL;
                     console.log("recorder stopped");
@@ -106,4 +106,3 @@ contextBridge.exposeInMainWorld('recorder', () => {
     }
 
 })
-
