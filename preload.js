@@ -31,19 +31,29 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     })
 
     // wave visualization
-    wavesurfer.load(wave)
-
+    wavesurfer.loadBlob(wave)
     // Connect wavesurfer option with player play/pause button
-    const audio = document.getElementById('microphone')
-    audio.onplay = connectPlay
-    audio.onpause = connectPause
-    audio.onended = connectPause
+    // const audio = document.getElementById('microphone')
+    // audio.onplay = connectPlay
+    // audio.onpause = connectPause
+    // audio.onended = connectPause
+    const play_btn = document.getElementById('play')
+    const pause_btn = document.getElementById('pause')
+    play_btn.onclick = function(){
+        connectPlay();
+        play_btn.setAttribute('hidden', true)
+        pause_btn.removeAttribute('hidden')
+    }
+    pause_btn.onclick = function(){
+        connectPause();
+        play_btn.removeAttribute('hidden')
+        pause_btn.setAttribute('hidden', true)
+    }
 
     // if click player play button
     function connectPlay(){
         wavesurfer.play()
     }
-
     // if click player pause button
     function connectPause(){
         wavesurfer.pause()
@@ -53,7 +63,14 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
 // Record Function
 contextBridge.exposeInMainWorld('recorder', () => {
     const record_btn = document.getElementById('record')    
-    const constraints = {audio: true} // Receive only audio when running stream
+    const constraints = {
+        audio: {
+            echoCancellation : false,
+            noiseSuppression : false,
+            channelCount : 1,
+            sampleRate : 16000,
+        }
+    } // Receive only audio when running stream
 
     // start, stop image
     const btn_img = document.getElementById('record-status')
@@ -80,22 +97,24 @@ contextBridge.exposeInMainWorld('recorder', () => {
 
                 // Load Recording file on player
                 var chunks = [];
+
+                // Save recorded data in chunks object
+                mediaRecorder.ondataavailable = function(e){
+                    chunks.push(e.data)
+                }
+
                 mediaRecorder.onstop = function(e) {
                     console.log("data available after MediaRecorder.stop() called.");
-                    var audio = document.getElementById('microphone')
+                    var audio = document.getElementById('play')
                     var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' }); //
                     var audioURL = window.URL.createObjectURL(blob);
-                    audio.src = audioURL;
+                    audio.alt = audioURL;
                     console.log("recorder stopped");
 
                     // Exit Stream
                     stream.getTracks().forEach(function(track){
                         track.stop();
                     })
-                }
-
-                mediaRecorder.ondataavailable = function(e){
-                    chunks.push(e.data)
                 }
             }, {once: true})
 

@@ -97,12 +97,6 @@ function extract_patches(input, ksize, stride, rate, padding){
         input : (1, 1, 287, 193) padded / 4Dims
         output : (1, 31, 257, 193) need to match freq to 257 / 4Dims
     */
-
-    // for(let i=0; i < input[2]; i+=stride[2]){
-    //     for(let j=0; j < input[1]; j+=stride[1]){
-
-    //     }
-    // }
     
 
 }

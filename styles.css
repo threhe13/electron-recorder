@@ -33,6 +33,16 @@ ul {
     padding-left: 0px;
 }
 
+button {
+    padding: 0%;
+    border-style: none;
+    border-color: white;
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
 /* Title */
 .title {
     width: 400px;
@@ -62,16 +72,14 @@ ul {
 
 button#save {
     margin-left: 5px;
-    padding: 0%;
-    border-style: none;
-    border-color: white;
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
 }
 
 button#save > img {
+    width: 30px;
+    height: 30px;
+}
+
+button#PlayPause > img {
     width: 30px;
     height: 30px;
 }
@@ -103,12 +111,3 @@ button#save > img {
     bottom: 0;
 }
 
-button#record {
-    padding: 0%;
-    border-style: none;
-    border-color: white;
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-}

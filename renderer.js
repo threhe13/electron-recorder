@@ -5,7 +5,11 @@ window.showNotification('앱이 실행되었습니다.')
 // function ~
 
 // Audio Player
-const audio = document.getElementById('microphone')
+// const audio = document.getElementById('microphone')
+const audio = document.getElementById('play')
+
+// Play/Pause Button
+const play_pause = document.getElementById('PlayPause')
 
 // Record Button
 const record_btn = document.getElementById('record')
@@ -20,11 +24,17 @@ const saveButton = document.getElementById('save')
 record_btn.addEventListener('click', recorder)
 
 // call Visualization function
-audio.addEventListener('loadeddata', function(){
-    waveVisualize(audio.src)
-})
 
-audio.addEventListener('loadeddata', function(){ saveButton.removeAttribute('disabled') }, {once:true})
+
+// alt.addEventListener('change', function(){
+//     waveVisualize(audio.src)
+// })
+
+// alt.addEventListener('change', function(){
+//     saveButton.removeAttribute('disabled')
+//     play_pause.removeAttribute('disabled')
+// }, {once:true})
+
 
 // Add Recorded Audio File
 saveButton.addEventListener('click', addList)
@@ -33,8 +43,8 @@ saveButton.addEventListener('click', addList)
 function addList(){
     const newLi = document.createElement('li') // parents node
     // Add file uploaded on player to the list
-    const newAudio = document.createElement('audio')
-    newAudio.setAttribute('src', audio.src) //need to actual download
+    const newAudio = document.createElement('span')
+    newAudio.innerHTML = audio.alt //need to actual download
     newAudio.setAttribute('hidden', true) // set invisible
 
     // Add in list child
@@ -50,8 +60,7 @@ function addList(){
 
         const target_audio = parent.children[0]
 
-        waveVisualize(target_audio.src)
-        audio.src = target_audio.src
+        waveVisualize(target_audio.innerHTML)
     })
 
     // Add in list child name
