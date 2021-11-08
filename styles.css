@@ -34,6 +34,7 @@ ul {
 }
 
 button {
+    margin: 0 auto;
     padding: 0%;
     border-style: none;
     border-color: white;

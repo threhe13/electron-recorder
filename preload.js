@@ -1,4 +1,4 @@
-const { contextBridge, nativeTheme } = require('electron')
+const { contextBridge } = require('electron')
 const WaveSurfer = require('wavesurfer.js')
 
 // Notification Function
@@ -31,14 +31,11 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     })
 
     // wave visualization
-    wavesurfer.loadBlob(wave)
-    // Connect wavesurfer option with player play/pause button
-    // const audio = document.getElementById('microphone')
-    // audio.onplay = connectPlay
-    // audio.onpause = connectPause
-    // audio.onended = connectPause
+    wavesurfer.load(wave)
+
     const play_btn = document.getElementById('play')
     const pause_btn = document.getElementById('pause')
+    // Activate Play and Pause Button
     play_btn.onclick = function(){
         connectPlay();
         play_btn.setAttribute('hidden', true)
@@ -58,70 +55,9 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     function connectPause(){
         wavesurfer.pause()
     }
-})
-
-// Record Function
-contextBridge.exposeInMainWorld('recorder', () => {
-    const record_btn = document.getElementById('record')    
-    const constraints = {
-        audio: {
-            echoCancellation : false,
-            noiseSuppression : false,
-            channelCount : 1,
-            sampleRate : 16000,
-        }
-    } // Receive only audio when running stream
-
-    // start, stop image
-    const btn_img = document.getElementById('record-status')
-
-    if(btn_img.alt == "start"){ //start record
-        //Visualize record state
-        btn_img.src = "./assets/images/stop.png"
-        btn_img.alt = "stop" // Status
-
-        // Record
-        const wave = navigator.mediaDevices.getUserMedia(constraints) //Docs
-        .then(stream => {
-            const mediaRecorder = new MediaRecorder(stream)
-
-            mediaRecorder.start()
-            console.log("Recording...") // for debug
-
-            record_btn.addEventListener('click', function(){
-
-                btn_img.src = "./assets/images/record.png"
-                btn_img.alt = "start" // Status
-                mediaRecorder.stop() //Stop recording
-                console.log("Stop Recording")
-
-                // Load Recording file on player
-                var chunks = [];
-
-                // Save recorded data in chunks object
-                mediaRecorder.ondataavailable = function(e){
-                    chunks.push(e.data)
-                }
-
-                mediaRecorder.onstop = function(e) {
-                    console.log("data available after MediaRecorder.stop() called.");
-                    var audio = document.getElementById('play')
-                    var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' }); //
-                    var audioURL = window.URL.createObjectURL(blob);
-                    audio.alt = audioURL;
-                    console.log("recorder stopped");
-
-                    // Exit Stream
-                    stream.getTracks().forEach(function(track){
-                        track.stop();
-                    })
-                }
-            }, {once: true})
-
-        })
-        .catch(err => { // Stream error
-            alert('Couldn\'t connect stream\n'+err)
-        })
-    }
-
+    // When finish to play audio, change pause icon to play icon
+    wavesurfer.on('finish', function() {
+        play_btn.removeAttribute('hidden')
+        pause_btn.setAttribute('hidden', true)
+    })
 })
