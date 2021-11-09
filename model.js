@@ -182,7 +182,11 @@ async function depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
 
 // Inferece Function
 async function inference(noisy){
+    setInitial()
+
     // Add STFT
+    
+
     var noisy_mag = mag(noisy)
     noisy_mag = tf.expandDims(0) // add virtual batch
     noisy_mag = tf.expandDims(0) // add virtual channel
@@ -190,12 +194,11 @@ async function inference(noisy){
     var pred_crm = enhancement(noisy_mag)
     pred_crm = pred_crm.transpose([0, 2, 3, 1])
     pred_crm = decompress_cIRM(pred_crm)
-    
-    var noisy_complex_real = null
-    var noisy_complex_imag = null
-    [noisy_complex_real, noisy_complex_imag] = sepComplex(pred_crm)
+    var [noisy_complex_real, noisy_complex_imag] = sepComplex(pred_crm)
 
     var enhanced = depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm)
     // Add Inverse STFT
+
+
     return enhanced
 }
