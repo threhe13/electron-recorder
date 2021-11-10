@@ -5,16 +5,22 @@ const fb_model = null,
     sb_model = null,
     fb_num_neighbors = null,
     sb_num_neighbors = null,
-    look_ahead = null;
+    look_ahead = null,
+    n_fft = null,
+    hop_length = null,
+    win_length = null;
 
 async function setInitial(){
-    fb_model = tf.loadLayersModel('./FullSubNet/fb_model/model.json')
-    sb_model = tf.loadLayersModel('./FullSubNet/sb_model/model.json')
+    fb_model = await tf.loadLayersModel('./FullSubNet/fb_model/model.json')
+    sb_model = await tf.loadLayersModel('./FullSubNet/sb_model/model.json')
 
     // Basic Setting
     fb_num_neighbors = 0
     sb_num_neighbors = 15
     look_ahead = 2
+    n_fft = 512
+    hop_length = 256
+    win_length = 512
 }
 
 async function unfold(input, num_neighbor){
@@ -185,9 +191,9 @@ async function inference(noisy){
     setInitial()
 
     // Add STFT
-    
+    var noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
 
-    var noisy_mag = mag(noisy)
+    var noisy_mag = mag(noisy_complex)
     noisy_mag = tf.expandDims(0) // add virtual batch
     noisy_mag = tf.expandDims(0) // add virtual channel
 
@@ -197,8 +203,21 @@ async function inference(noisy){
     var [noisy_complex_real, noisy_complex_imag] = sepComplex(pred_crm)
 
     var enhanced = depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm)
-    // Add Inverse STFT
 
+    // Add Inverse STFT
+    // 
 
     return enhanced
+}
+
+// Temporary - tfjs is not exist istft
+function stft(input, n_fft, hop_length, win_length){
+    let x = tf.signal.stft(
+        input,
+        n_fft,
+        hop_length,
+        win_length,
+        tf.signal.hannWindow
+    );
+    return x;
 }

@@ -1,3 +1,5 @@
+import "./model"
+
 //Notification Function(for Pracitce)
 window.showNotification('앱이 실행되었습니다.')
 
@@ -16,7 +18,7 @@ const waveform = document.getElementById('waveform')
 // Save Button
 const saveButton = document.getElementById('save')
 
-// call Record Function
+//init call Record Setting
 let mic = null,
     stream = null,
     mediaStream = null,
@@ -35,6 +37,7 @@ const constraints = {
 record_start_btn.addEventListener('click', startRec)
 record_end_btn.addEventListener('click', stopRec)
 
+// Start Record Function
 async function startRec() {
     record_start_btn.hidden = true
     record_end_btn.hidden = false
@@ -58,6 +61,7 @@ function handleDataAvailable(e){
     chunks.push(e.data)
 }
 
+// MediaRecorder stop event
 function handleStop(e){
     console.log("data available after MediaRecorder.stop() called.");
     const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' })
@@ -70,6 +74,7 @@ function handleStop(e){
     chunks = []
 }
 
+// Stop Record Function
 function stopRec(){
     mic.stop()
     record_start_btn.hidden = false
@@ -111,3 +116,18 @@ function addList(){
     const ul = document.getElementById('list')
     ul.appendChild(newLi)
 }
+
+function recover(url){
+    /*
+        param
+        url : URL of blob created by URL.createObjectURL();
+        .. e.g. const media = document.getElementById('media').innerText .then media == url
+
+        return : Float32Array (for using Tensor)
+    */
+
+    let blob = await fetch(url).then(r => r.blob());
+    return blob
+}
+
+//Need to create Function that convert Blob to Float32Array
