@@ -191,8 +191,8 @@ async function inference(noisy){
     setInitial()
 
     // Add STFT
-    var noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
-
+    // var noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
+    var noisy_complex = await customSTFT(noisy) // e.g. [freqs : 257, frames : 193]
     var noisy_mag = mag(noisy_complex)
     noisy_mag = tf.expandDims(0) // add virtual batch
     noisy_mag = tf.expandDims(0) // add virtual channel
@@ -220,4 +220,63 @@ function stft(input, n_fft, hop_length, win_length){
         tf.signal.hannWindow
     );
     return x;
+}
+
+// custom STFT function
+async function customSTFT(input, n_fft, hop_length, win_length){
+    // assume window is hann
+    let window = tf.signal.hannWindow(win_length) // shape : 512
+    window = window.reshape([1, win_length])
+    /*
+        params
+        input : e.g Tensor[49601] about 3s audio
+        n_fft : fft length
+        hop_length : length of overlap
+        win_length : window length 
+
+        Generally n_fft equals win_length(my experience)
+
+        output : [257, 193] contain reflect padding
+    */
+    let length = input.shape[0]
+    let concat = null
+
+    for (var i = 0; i < length; i += hop_length) {
+        if (i + hop_length > length){
+            break;
+        }
+
+        let temp = x.slice([i], [n_fft]);
+        temp = window.mul(temp); // window * frame
+        // temp.print();
+        temp = temp.reshape([1, temp.shape[0]]);
+        temp = temp.mul(window); //element-wise multiply
+        
+        let temp_rfft = temp.rfft(); // none axis parameter
+        // console.log(temp_rfft.shape); // for debugging
+        // temp_rfft.print(); //for debugging
+        if (concat == null) {
+            concat = temp_rfft;
+        } else {
+            concat = tf.concat([concat, temp_rfft], 0);
+        }
+    }
+
+    concat = concat.transpose([1, 0]) // [num_freqs, num_frames]
+    return concat
+}
+
+function setWindowPow(window){
+    // some code...
+    return window
+}
+
+async function customISTFT(input, n_fft, hop_length, win_length){
+    let window = tf.signal.hannWindow(512)
+    window = window.reshape([1, win_length])
+
+    //Need to pow window
+    let window_pow = setWindowPow(window)
+
+    
 }

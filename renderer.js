@@ -117,6 +117,7 @@ function addList(){
     ul.appendChild(newLi)
 }
 
+// Modern Method 
 function recover(url){
     /*
         param
