@@ -205,8 +205,7 @@ async function inference(noisy){
     var enhanced = depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm)
 
     // Add Inverse STFT
-    // 
-
+    enhanced = await customISTFT(enhanced)
     return enhanced
 }
 
@@ -268,15 +267,27 @@ async function customSTFT(input, n_fft, hop_length, win_length){
 
 function setWindowPow(window){
     // some code...
+    let window_pow = window.pow(2)
+
+    //1. create empty Tensor
+
+    //2. add to overlapping
+
+
     return window
 }
 
 async function customISTFT(input, n_fft, hop_length, win_length){
-    let window = tf.signal.hannWindow(512)
-    window = window.reshape([1, win_length])
+    let window = tf.signal.hannWindow(512) // [512]
+    window = window.reshape([1, win_length]) // [1, 512]
 
     //Need to pow window
     let window_pow = setWindowPow(window)
 
+    // irfft
+
+    // divided by window_pow
+
+    // add to overlapping
     
 }

@@ -1,5 +1,3 @@
-import "./model"
-
 //Notification Function(for Pracitce)
 window.showNotification('앱이 실행되었습니다.')
 
@@ -22,18 +20,23 @@ const saveButton = document.getElementById('save')
 let mic = null,
     stream = null,
     mediaStream = null,
-    chunks = [];
+    chunks = [],
+    audioCtx,
+    source;
 
 const constraints = {
     audio: {
         //audio option
+        autoGainControls : false,
         echoCancellation : false,
         noiseSuppression : false,
         channelCount : 1,
         sampleRate : 16000,
-    }
+    },
+    video: false,
 } // Receive only audio when running stream
 
+// Add Record Event
 record_start_btn.addEventListener('click', startRec)
 record_end_btn.addEventListener('click', stopRec)
 
@@ -42,29 +45,40 @@ async function startRec() {
     record_start_btn.hidden = true
     record_end_btn.hidden = false
 
-    stream = await navigator.mediaDevices.getUserMedia(constraints)
+    navigator.mediaDevices.getUserMedia(constraints).then(
+        stream => {
+            //Using AudioContext
+            let AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
 
-    if (stream) {
-        //Start Recording...
-        mediaStream = new MediaStream(stream.getTracks())
-        mic = new MediaRecorder(mediaStream)
-        mic.ondataavailable = handleDataAvailable
-        mic.onstop = handleStop
-        mic.start()
-        // console.log(mic)
-        console.log("Recording has started...")
-    }
+            
+
+        }
+    )
+
+    // if (stream) {
+    //     //Start Recording...
+    //     mediaStream = new MediaStream(stream.getAudioTracks())
+        
+    //     mic = new MediaRecorder(mediaStream)
+    //     mic.ondataavailable = handleDataAvailable
+    //     mic.onstop = handleStop
+    //     mic.start()
+    //     // console.log(mic)
+    //     console.log("Recording has started...")
+    // }
 }
 
 function handleDataAvailable(e){
     // Input data in array named chunks
     chunks.push(e.data)
+    console.log(chunks)
 }
 
 // MediaRecorder stop event
 function handleStop(e){
     console.log("data available after MediaRecorder.stop() called.");
-    const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' })
+    const blob = new Blob(chunks, { 'type' : 'audio/wav' })
     const audioURL = window.URL.createObjectURL(blob);
     url.innerHTML = audioURL
     waveVisualize(audioURL)
@@ -118,7 +132,7 @@ function addList(){
 }
 
 // Modern Method 
-function recover(url){
+async function recover(url){
     /*
         param
         url : URL of blob created by URL.createObjectURL();
@@ -127,7 +141,24 @@ function recover(url){
         return : Float32Array (for using Tensor)
     */
 
-    let blob = await fetch(url).then(r => r.blob());
+    let blob = await fetch(url).then(r => r.blob()); // Blob .. important using await
+
+    // Convert blob to ArrayBuffer
+    // let fileReader = new FileReader(),
+    //     array;
+
+    // fileReader.onload = function(e){
+    //     array = this.result;
+    //     console.log("ArrayBuffer contains", array.byteLength, "bytes.");
+    // }
+    // fileReader.readAsArrayBuffer(blob)
+    // Upper function is same to below line
+    let arrayBuffer = blob.arrayBuffer(); 
+
+    // But it's type is Int8Array... we need to Float32Array
+
+
+
     return blob
 }
 

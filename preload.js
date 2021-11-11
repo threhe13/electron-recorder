@@ -21,10 +21,21 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
         waveform.removeChild(child)
     }
 
+    // check darkmode
+    let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    let color = null
+
+    if(isDark){
+        color = '#FFFFFF'
+    }
+    else{
+        color = "#1D201F"
+    }
+
     // Create New Waveform
     const wavesurfer = WaveSurfer.create({
         container: "#waveform",
-        waveColor: "#1D201F",
+        waveColor: color,
         progressColor: "#C58882",
         height: 128,
         normalize: true,
