@@ -17,12 +17,13 @@ const waveform = document.getElementById('waveform')
 const saveButton = document.getElementById('save')
 
 //init call Record Setting
-let mic = null,
-    stream = null,
-    mediaStream = null,
-    chunks = [],
+let mediaStream,
+    buffer = [],
+    AudioContext,
     audioCtx,
-    source;
+    bufferSize = 4096,
+    processor,
+    audioSourceNode;
 
 const constraints = {
     audio: {
@@ -40,21 +41,37 @@ const constraints = {
 record_start_btn.addEventListener('click', startRec)
 record_end_btn.addEventListener('click', stopRec)
 
+function init(){
+    AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext({
+        sampleRate: 16000, //Set SampleRate
+    });
+
+    processor = audioCtx.createScriptProcessor(bufferSize, 1, 1);
+    processor.connect(audioCtx.destination);
+    audioCtx.resume();
+}
+
 // Start Record Function
 async function startRec() {
     record_start_btn.hidden = true
     record_end_btn.hidden = false
 
+    await init();
     navigator.mediaDevices.getUserMedia(constraints).then(
-        stream => {
+        (stream) => {
             //Using AudioContext
-            let AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-
-            
-
+            mediaStream = stream;
+            audioSourceNode = audioCtx.createMediaStreamSource(stream);
+            audioSourceNode.connect(processor);
+            processor.onaudioprocess = function(e){
+                let temp = e.inputBuffer.getChannelData(0);
+                for(let i = 0; i < bufferSize; i++){
+                    buffer.push(temp[i]);
+                }
+            }
         }
-    )
+    );
 
     // if (stream) {
     //     //Start Recording...
@@ -69,28 +86,38 @@ async function startRec() {
     // }
 }
 
-function handleDataAvailable(e){
-    // Input data in array named chunks
-    chunks.push(e.data)
-    console.log(chunks)
-}
+// function handleDataAvailable(e){
+//     // Input data in array named chunks
+//     chunks.push(e.data)
+//     console.log(chunks)
+// }
 
 // MediaRecorder stop event
-function handleStop(e){
+function handleStop(chunks){
     console.log("data available after MediaRecorder.stop() called.");
-    const blob = new Blob(chunks, { 'type' : 'audio/wav' })
+    const blob = new Blob(chunks, { 'type' : 'audio/wav' });
     const audioURL = window.URL.createObjectURL(blob);
-    url.innerHTML = audioURL
-    waveVisualize(audioURL)
+    url.innerHTML = audioURL;
+    waveVisualize(audioURL);
     // Exit Stream
-    stream.getTracks().forEach(track => track.stop());
-    // Reset chunks array
-    chunks = []
+    mediaStream.getTracks().forEach(track => track.stop());
 }
 
 // Stop Record Function
-function stopRec(){
-    mic.stop()
+async function stopRec(){
+    // mic.stop()
+    await handleStop(buffer);
+
+    audioSourceNode.disconnect(processor);
+    processor.disconnect(audioCtx.destination);
+    audioCtx.close().then(function(){
+        audioSourceNode = null;
+        processor = null;
+        audioCtx = null;
+        AudioContext = null;
+        buffer = [];
+    })
+
     record_start_btn.hidden = false
     record_end_btn.hidden = true
     console.log("Recording Stopped...")
@@ -156,9 +183,6 @@ async function recover(url){
     let arrayBuffer = blob.arrayBuffer(); 
 
     // But it's type is Int8Array... we need to Float32Array
-
-
-
     return blob
 }
 
