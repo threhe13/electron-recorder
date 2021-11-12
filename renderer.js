@@ -66,9 +66,7 @@ async function startRec() {
             audioSourceNode.connect(processor);
             processor.onaudioprocess = function(e){
                 let temp = e.inputBuffer.getChannelData(0);
-                for(let i = 0; i < bufferSize; i++){
-                    buffer.push(temp[i]);
-                }
+                handleDataAvailable(temp);
             }
         }
     );
@@ -86,16 +84,22 @@ async function startRec() {
     // }
 }
 
-// function handleDataAvailable(e){
-//     // Input data in array named chunks
-//     chunks.push(e.data)
-//     console.log(chunks)
-// }
+function handleDataAvailable(e){
+    // Input data in array named buffer
+    for(let i = 0; i < bufferSize; i++){
+        buffer.push(e[i]);
+    }
+}
 
 // MediaRecorder stop event
 function handleStop(chunks){
-    console.log("data available after MediaRecorder.stop() called.");
-    const blob = new Blob(chunks, { 'type' : 'audio/wav' });
+    let forWav = getWavBytes(chunks.buffer, {
+        isFloat: true,
+        numChannels: 1,
+        sampleRate: 16000,
+    });
+
+    const blob = new Blob([forWav], { 'type' : 'audio/wav' });
     const audioURL = window.URL.createObjectURL(blob);
     url.innerHTML = audioURL;
     waveVisualize(audioURL);
@@ -106,8 +110,10 @@ function handleStop(chunks){
 // Stop Record Function
 async function stopRec(){
     // mic.stop()
+    // Set buffer to Float32Array
     await handleStop(buffer);
 
+    console.log("Processor Disconnect called.");
     audioSourceNode.disconnect(processor);
     processor.disconnect(audioCtx.destination);
     audioCtx.close().then(function(){
@@ -183,7 +189,7 @@ async function recover(url){
     let arrayBuffer = blob.arrayBuffer(); 
 
     // But it's type is Int8Array... we need to Float32Array
-    return blob
+    return arrayBuffer
 }
 
 //Need to create Function that convert Blob to Float32Array
