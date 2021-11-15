@@ -41,7 +41,6 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
         normalize: true,
         interact: false,
     })
-
     // wave visualization
     wavesurfer.load(wave)
 

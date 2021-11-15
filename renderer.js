@@ -47,6 +47,8 @@ function init(){
         sampleRate: 16000, //Set SampleRate
     });
 
+    console.log(audioCtx.destination)
+
     processor = audioCtx.createScriptProcessor(bufferSize, 1, 1);
     processor.connect(audioCtx.destination);
     audioCtx.resume();
@@ -66,6 +68,7 @@ async function startRec() {
             audioSourceNode.connect(processor);
             processor.onaudioprocess = function(e){
                 let temp = e.inputBuffer.getChannelData(0);
+                console.log(e.inputBuffer.numberOfChannels)
                 handleDataAvailable(temp);
             }
         }
@@ -86,25 +89,45 @@ async function startRec() {
 
 function handleDataAvailable(e){
     // Input data in array named buffer
-    for(let i = 0; i < bufferSize; i++){
+    for(let i = 0; i < e.length; i++){
         buffer.push(e[i]);
     }
 }
 
-// MediaRecorder stop event
-function handleStop(chunks){
-    let forWav = getWavBytes(chunks.buffer, {
-        isFloat: true,
-        numChannels: 1,
-        sampleRate: 16000,
-    });
+let f32a;
+// let uint8a;
 
-    const blob = new Blob([forWav], { 'type' : 'audio/wav' });
-    const audioURL = window.URL.createObjectURL(blob);
+// Recorder Stop Event
+function handleStop(chunks){
+    f32a = new Float32Array(chunks); // Set ArrayBuffer(Float32Array)
+    // let uint8a = convert_uint8(f32a)
+    let f32a_buffer = f32a.buffer; // array.buffer
+
+    // Tester
+    // uint8a = new Uint8Array(f32a_buffer).buffer
+    // console.log(uint8a);
+
+    let blob = new Blob([f32a_buffer], {type: 'audio/ogg'});
+    console.log(blob instanceof Blob)
+    const audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
     waveVisualize(audioURL);
     // Exit Stream
     mediaStream.getTracks().forEach(track => track.stop());
+}
+
+// Convert Float32Array to Uint8Array
+function convert_uint8(f32a){
+    var output = new Uint8Array(f32a.length);
+
+    for (var i = 0; i < f32a.length; i++) {
+    var tmp = Math.max(-1, Math.min(1, f32a[i]));
+        tmp = tmp < 0 ? (tmp * 0x8000) : (tmp * 0x7FFF);
+        tmp = tmp / 256;
+        output[i] = tmp + 128;
+    }
+
+    return output;
 }
 
 // Stop Record Function
