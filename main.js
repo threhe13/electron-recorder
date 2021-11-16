@@ -15,7 +15,8 @@ function createWindow(){
             height: 600,
             resizable: true,
             webPreferences: {
-                preload: path.join(__dirname, 'preload.js')
+                nodeIntegration: true, //a security risk only when you're executing some untrusted remote code on your application.
+                contextIsolation: false,
             },
         }
     )

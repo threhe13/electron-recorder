@@ -1,5 +1,8 @@
+const preload = require('./preload.js');
+const model = require('./model.js');
+
 //Notification Function(for Pracitce)
-window.showNotification('앱이 실행되었습니다.')
+showNotification.create('앱이 실행되었습니다.');
 
 // Audio Player
 // const audio = document.getElementById('microphone')
@@ -16,14 +19,12 @@ const waveform = document.getElementById('waveform')
 // Save Button
 const saveButton = document.getElementById('save')
 
-//init call Record Setting
 let mediaStream,
-    buffer = [],
+    mic,
+    chunks = [],
     AudioContext,
     audioCtx,
-    bufferSize = 4096,
-    processor,
-    audioSourceNode;
+    processor;
 
 const constraints = {
     audio: {
@@ -37,106 +38,75 @@ const constraints = {
     video: false,
 } // Receive only audio when running stream
 
-// Add Record Event
-record_start_btn.addEventListener('click', startRec)
-record_end_btn.addEventListener('click', stopRec)
-
-function init(){
+//for exporting to model.js
+async function init(){
     AudioContext = window.AudioContext || window.webkitAudioContext;
     audioCtx = new AudioContext({
         sampleRate: 16000, //Set SampleRate
-    });
-    // console.log(audioCtx.destination)
-    processor = audioCtx.createScriptProcessor(bufferSize, 1, 1);
+    });// Create AudioContext
+
+    await audioCtx.audioWorklet.addModule('model.js')
+    processor = new AudioWorkletNode(audioCtx, 'processor')
     processor.connect(audioCtx.destination);
     audioCtx.resume();
 }
 
-// Start Record Function
-async function startRec() {
+async function startRec(){
     record_start_btn.hidden = true
     record_end_btn.hidden = false
 
-    await init();
+    init();
+    console.log(audioCtx);
+
     navigator.mediaDevices.getUserMedia(constraints).then(
         (stream) => {
-            //Using AudioContext
-            mediaStream = stream;
-            audioSourceNode = audioCtx.createMediaStreamSource(stream);
-            audioSourceNode.connect(processor);
-            processor.onaudioprocess = function(e){
-                let temp = e.inputBuffer.getChannelData(0);
-                console.log(e.inputBuffer.numberOfChannels)
-                handleDataAvailable(temp);
-            }
+            // console.log(stream);
+            mediaStream = stream
+            // console.log(mediaStream);
+            mic = new MediaRecorder(stream);
+            mic.ondataavailable = handleDataAvailable;
+            mic.onstop = handleStop;
+            mic.start(); // Start Recording
+            console.log("Recording has started...");
         }
     );
-
-    // if (stream) {
-    //     //Start Recording...
-    //     mediaStream = new MediaStream(stream.getAudioTracks())
-        
-    //     mic = new MediaRecorder(mediaStream)
-    //     mic.ondataavailable = handleDataAvailable
-    //     mic.onstop = handleStop
-    //     mic.start()
-    //     // console.log(mic)
-    //     console.log("Recording has started...")
-    // }
 }
 
 function handleDataAvailable(e){
-    // Input data in array named buffer
-    for(let i = 0; i < e.length; i++){
-        buffer.push(e[i]);
-    }
+    console.log(e)
+    console.log(e.data)
+    chunks.push(e.data);
 }
 
-let f32a;
-// let uint8a;
-
-// Recorder Stop Event
-function handleStop(chunks){
-    f32a = new Float32Array(chunks); // Set Float32Array)
-    // let uint8a = convert_uint8(f32a)
-    
-    let f32a_buffer = f32a.buffer; // Set ArrayBuffer
-    let blob = new Blob([f32a_buffer], {type: 'audio/ogg'});
+function handleStop(){
+    let blob = new Blob(chunks, {type: 'audio/wav'});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
-    waveVisualize(audioURL);
+    waveVisualize.create(audioURL);
 
+    chunks = [];
+    mic = null; 
+    // console.log(mic);
     // Exit Stream
     mediaStream.getTracks().forEach(track => track.stop());
 }
 
-// Stop Record Function
-async function stopRec(){
-    // mic.stop()
-    // Set buffer to Float32Array
-    await handleStop(buffer);
-
-    console.log("Processor Disconnect called.");
-    audioSourceNode.disconnect(processor);
-    processor.disconnect(audioCtx.destination);
-    audioCtx.close().then(function(){
-        audioSourceNode = null;
-        processor = null;
-        audioCtx = null;
-        AudioContext = null;
-        buffer = [];
-    })
-
-    record_start_btn.hidden = false
-    record_end_btn.hidden = true
-    console.log("Recording Stopped...")
+function stopRec(){
+    mic.stop();
+    record_start_btn.hidden = false;
+    record_end_btn.hidden = true;
+    console.log("Recording Stopped...");
 
     play_pause.disabled = false
     saveButton.disabled = false
 }
 
+// Add Record Event
+record_start_btn.addEventListener('click', startRec);
+record_end_btn.addEventListener('click', stopRec);
+
 // Add Recorded Audio File
-saveButton.addEventListener('click', addList)
+saveButton.addEventListener('click', addList);
 // Click List
 function addList(){
     const newLi = document.createElement('li') // parents node
@@ -156,7 +126,7 @@ function addList(){
         const target = e.target
         const parent = target.parentElement
         const target_audio = parent.children[0]
-        waveVisualize(target_audio.innerText)
+        waveVisualize.create(target_audio.innerText)
     })
 
     // Add in list child name
@@ -166,5 +136,3 @@ function addList(){
     const ul = document.getElementById('list')
     ul.appendChild(newLi)
 }
-
-//Need to create Function that convert Blob to Float32Array

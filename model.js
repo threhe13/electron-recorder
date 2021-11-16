@@ -1,5 +1,5 @@
-const { permute } = require('@tensorflow/tfjs-layers/dist/exports_layers')
-const tf = require('@tensorflow/tfjs-node')
+const tf = require('@tensorflow/tfjs-node');
+console.log(tf.getBackend());
 
 const fb_model = null,
     sb_model = null,
@@ -116,12 +116,6 @@ async function enhancement(noisy_mag){
 
 async function extract_patches(input, ksize, stride){
     // eg. input = [1, 287, 193, 1]
-    const num_freq_padded = input.shape[1]
-    const num_frame = input.shape[2]
-
-    const stride_row = stride.shape[1]
-    const stride_col = stride.shape[2]
-
     /*
     Goal
     eg. [1, 31, 193, 257]
@@ -188,6 +182,7 @@ async function depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
 
 // Inferece Function
 async function inference(noisy){
+    await tf.setBackend('cpu');
     setInitial()
 
     // Add STFT
@@ -289,5 +284,18 @@ async function customISTFT(input, n_fft, hop_length, win_length){
     // divided by window_pow
 
     // add to overlapping
-    
 }
+
+
+function test() {
+    console.log('test');
+}
+exports.inference = this.test;
+
+// class Processor extends AudioWorkletProcessor {
+//     process (inputs, outputs, parameters) {
+//         console.log("test");
+//         return true
+//     }
+// }
+// registerProcessor('processor', Processor)

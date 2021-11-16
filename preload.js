@@ -1,18 +1,19 @@
-const { contextBridge, nativeTheme } = require('electron')
 const WaveSurfer = require('wavesurfer.js')
 
 // Notification Function
-contextBridge.exposeInMainWorld('showNotification', (contents) => {
-    new Notification(
+window.showNotification = {
+    create: (contents) => { new Notification(
         "Electron-Dev",
         { 
             body: contents,
         }
     );
-})
+}}
+exports.showNotification = this.showNotification
 
 // Audio Visualization
-contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
+window.waveVisualize = { 
+    create: (wave) => {
     // console.log('load wave...')
     // Delete previous waveform
     const waveform = document.getElementById('waveform')
@@ -74,4 +75,5 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
         play_btn.removeAttribute('hidden')
         pause_btn.setAttribute('hidden', true)
     })
-})
+}}
+exports.waveVisualize = this.waveVisualize
