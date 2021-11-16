@@ -1,5 +1,5 @@
 const preload = require('./preload.js');
-const model = require('./model.js');
+const cc = require('./FullSubNet/model.js'); //for test
 
 //Notification Function(for Pracitce)
 showNotification.create('앱이 실행되었습니다.');
@@ -45,8 +45,13 @@ async function init(){
         sampleRate: 16000, //Set SampleRate
     });// Create AudioContext
 
-    await audioCtx.audioWorklet.addModule('model.js')
-    processor = new AudioWorkletNode(audioCtx, 'processor')
+    try {
+        processor = new AudioWorkletNode(audioCtx, 'processor');
+    } catch (err) {
+        await audioCtx.audioWorklet.addModule('./FullSubNet/model.js');
+        processor = new AudioWorkletNode(audioCtx, 'processor');
+    }
+    
     processor.connect(audioCtx.destination);
     audioCtx.resume();
 }
@@ -55,7 +60,10 @@ async function startRec(){
     record_start_btn.hidden = true
     record_end_btn.hidden = false
 
-    init();
+    //import test -> ok!
+    cc.inference('test');
+
+    // init();
     console.log(audioCtx);
 
     navigator.mediaDevices.getUserMedia(constraints).then(

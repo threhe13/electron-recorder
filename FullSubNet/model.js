@@ -1,6 +1,3 @@
-const tf = require('@tensorflow/tfjs-node');
-console.log(tf.getBackend());
-
 const fb_model = null,
     sb_model = null,
     fb_num_neighbors = null,
@@ -11,8 +8,8 @@ const fb_model = null,
     win_length = null;
 
 async function setInitial(){
-    fb_model = await tf.loadLayersModel('./FullSubNet/fb_model/model.json')
-    sb_model = await tf.loadLayersModel('./FullSubNet/sb_model/model.json')
+    fb_model = await tf.loadLayersModel('./fb_model/model.json')
+    sb_model = await tf.loadLayersModel('./sb_model/model.json')
 
     // Basic Setting
     fb_num_neighbors = 0
@@ -286,16 +283,26 @@ async function customISTFT(input, n_fft, hop_length, win_length){
     // add to overlapping
 }
 
-
-function test() {
-    console.log('test');
+// For testing
+module.exports = {
+    inference: (context) => {
+        console.log(context)
+    }
 }
-exports.inference = this.test;
 
-// class Processor extends AudioWorkletProcessor {
+// class testProcessor extends AudioWorkletProcessor {
+//     constructor () {
+//         super()
+//         // current sample-frame and time at the moment of instantiation
+//         // to see values change, you can put these two lines in process method
+//         console.log(currentFrame)
+//         console.log(currentTime)
+//       }
+//     // the process method is required - output silence,
+//     // which the outputs are already filled with
 //     process (inputs, outputs, parameters) {
-//         console.log("test");
-//         return true
+//         console.log('test');
+//         // return true
 //     }
 // }
-// registerProcessor('processor', Processor)
+// registerProcessor('processor', testProcessor)

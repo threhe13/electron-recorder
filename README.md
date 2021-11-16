@@ -19,6 +19,8 @@ Desktop Application included Speech Enhancement Model<br>
 > - Images : <a href="https://www.flaticon.com/" target="_blank">Flaticon</a>
 
 ### Develop Environment
+current developing...
+
 1. MacOS(~~Big Sur~~ Monterey, <code>Intel</code>)
 2. Visual Studio Code
 3. Vanila JS
