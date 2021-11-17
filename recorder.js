@@ -1,5 +1,5 @@
 const preload = require('./preload.js');
-const cc = require('./FullSubNet/model.js'); //for test
+// const cc = require('./FullSubNet/model.js'); //for test
 
 //Notification Function(for Pracitce)
 showNotification.create('앱이 실행되었습니다.');
@@ -20,6 +20,7 @@ const waveform = document.getElementById('waveform')
 const saveButton = document.getElementById('save')
 
 let mediaStream,
+    streamNode,
     mic,
     chunks = [],
     AudioContext,
@@ -38,6 +39,14 @@ const constraints = {
     video: false,
 } // Receive only audio when running stream
 
+const process_parameters = {
+    processorOptions: {
+        bufferSize : 4096,
+    },
+    numberOfInput: 1,
+    numberOfOutput: 1,
+};
+
 //for exporting to model.js
 async function init(){
     AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -45,27 +54,26 @@ async function init(){
         sampleRate: 16000, //Set SampleRate
     });// Create AudioContext
 
+    // Create createScrioptProcessor function
+    
+
     try {
-        processor = new AudioWorkletNode(audioCtx, 'processor');
+        processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
     } catch (err) {
         await audioCtx.audioWorklet.addModule('./FullSubNet/model.js');
-        processor = new AudioWorkletNode(audioCtx, 'processor');
+        processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
     }
-    
-    processor.connect(audioCtx.destination);
-    audioCtx.resume();
 }
 
 async function startRec(){
-    record_start_btn.hidden = true
-    record_end_btn.hidden = false
+    record_start_btn.hidden = true;
+    record_end_btn.hidden = false;
+    mediaStream = null;
 
     //import test -> ok!
-    cc.inference('test');
+    // cc.inference('test');
 
-    // init();
-    console.log(audioCtx);
-
+    init();
     navigator.mediaDevices.getUserMedia(constraints).then(
         (stream) => {
             // console.log(stream);
@@ -81,8 +89,6 @@ async function startRec(){
 }
 
 function handleDataAvailable(e){
-    console.log(e)
-    console.log(e.data)
     chunks.push(e.data);
 }
 
@@ -92,9 +98,16 @@ function handleStop(){
     url.innerHTML = audioURL;
     waveVisualize.create(audioURL);
 
+    streamNode = audioCtx.createMediaStreamSource(mediaStream);
+    streamNode.connect(processor);
+    console.log(streamNode);
+    console.log(processor)
+
+    // Reset Arg
     chunks = [];
     mic = null; 
-    // console.log(mic);
+    // streamNode = null;
+
     // Exit Stream
     mediaStream.getTracks().forEach(track => track.stop());
 }

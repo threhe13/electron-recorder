@@ -284,25 +284,23 @@ async function customISTFT(input, n_fft, hop_length, win_length){
 }
 
 // For testing
-module.exports = {
-    inference: (context) => {
-        console.log(context)
-    }
-}
-
-// class testProcessor extends AudioWorkletProcessor {
-//     constructor () {
-//         super()
-//         // current sample-frame and time at the moment of instantiation
-//         // to see values change, you can put these two lines in process method
-//         console.log(currentFrame)
-//         console.log(currentTime)
-//       }
-//     // the process method is required - output silence,
-//     // which the outputs are already filled with
-//     process (inputs, outputs, parameters) {
-//         console.log('test');
-//         // return true
+// module.exports = {
+//     inference: (context) => {
+//         console.log(context)
 //     }
 // }
-// registerProcessor('processor', testProcessor)
+
+class testProcessor extends AudioWorkletProcessor {
+    constructor () {
+        super()
+        // current sample-frame and time at the moment of instantiation
+        // to see values change, you can put these two lines in process method
+      }
+    // the process method is required - output silence,
+    // which the outputs are already filled with
+    process (inputs, outputs, parameters) {
+        console.log(outputs[0])
+        return true;
+    }
+}
+registerProcessor('processor', testProcessor)
