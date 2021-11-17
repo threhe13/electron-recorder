@@ -25,7 +25,8 @@ let mediaStream,
     chunks = [],
     AudioContext,
     audioCtx,
-    processor;
+    processor,
+    buffer = [];
 
 const constraints = {
     audio: {
@@ -45,6 +46,7 @@ const process_parameters = {
     },
     numberOfInputs: 1,
     numberOfOutputs: 1,
+    channelCount: 1,
 };
 
 //for exporting to model.js
@@ -55,15 +57,8 @@ async function init(){
     });// Create AudioContext
 
     // Create createScrioptProcessor function
-    
-
-    try {
-        processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
-    } catch (err) {
-        await audioCtx.audioWorklet.addModule('./FullSubNet/model.js');
-        processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
-    }
-
+    await audioCtx.audioWorklet.addModule('./FullSubNet/model.js');
+    processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
     processor.connect(audioCtx.destination);
     audioCtx.resume();
 }
@@ -103,6 +98,8 @@ function handleStop(){
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
     waveVisualize.create(audioURL);
+
+    console.log(processor);
 
     // Reset Arg
     chunks = [];

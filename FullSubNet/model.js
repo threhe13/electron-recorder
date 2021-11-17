@@ -288,18 +288,42 @@ async function customISTFT(input, n_fft, hop_length, win_length){
 //     }
 // }
 
+// let buffer = [];
 class testProcessor extends AudioWorkletProcessor {
-    constructor () {
-        super()
+    constructor (options) {
+        super();
+
+        this._frameSize = 128;
+        this._bufferSize = options.processorOptions.bufferSize;
         // current sample-frame and time at the moment of instantiation
         // to see values change, you can put these two lines in process method
-      }
+        this._frameCount = this._bufferSize / this._frameSize;
+        
+        // Set initial arguments
+        this._inputData = [];
+        this._outputData = [];
+    }
+    
+    // reference : https://stackoverflow.com/questions/63669376/buffersize-in-audioworklet-program-results-in-glitchy-sound
+    _inputProcess(data) { 
+
+    }
+
+    _outputProcess(data){
+
+    }
+
     // the process method is required - output silence,
     // which the outputs are already filled with
     process (inputs, outputs, parameters) {
-        console.log(inputs[0])
+        // console.log(inputs) // Current buffer size = 128 
+        // buffer.push(inputs[0]);
+        if(!(inputs[0][0]) instanceof Float32Array){
+            return true;
+        }// if not input type is Float32Array, then return.
+        // this._inputProcess(inputs[0]);
+        console.log(inputs[0][0]);
 
-        
 
         return true;
     }
