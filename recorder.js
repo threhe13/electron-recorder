@@ -43,8 +43,8 @@ const process_parameters = {
     processorOptions: {
         bufferSize : 4096,
     },
-    numberOfInput: 1,
-    numberOfOutput: 1,
+    numberOfInputs: 1,
+    numberOfOutputs: 1,
 };
 
 //for exporting to model.js
@@ -63,6 +63,9 @@ async function init(){
         await audioCtx.audioWorklet.addModule('./FullSubNet/model.js');
         processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
     }
+
+    processor.connect(audioCtx.destination);
+    audioCtx.resume();
 }
 
 async function startRec(){
@@ -79,6 +82,9 @@ async function startRec(){
             // console.log(stream);
             mediaStream = stream
             // console.log(mediaStream);
+            streamNode = audioCtx.createMediaStreamSource(stream);
+            streamNode.connect(processor);
+
             mic = new MediaRecorder(stream);
             mic.ondataavailable = handleDataAvailable;
             mic.onstop = handleStop;
@@ -98,11 +104,6 @@ function handleStop(){
     url.innerHTML = audioURL;
     waveVisualize.create(audioURL);
 
-    streamNode = audioCtx.createMediaStreamSource(mediaStream);
-    streamNode.connect(processor);
-    console.log(streamNode);
-    console.log(processor)
-
     // Reset Arg
     chunks = [];
     mic = null; 
@@ -114,6 +115,8 @@ function handleStop(){
 
 function stopRec(){
     mic.stop();
+    audioCtx.close();
+
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;
     console.log("Recording Stopped...");

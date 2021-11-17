@@ -179,9 +179,7 @@ async function depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
 
 // Inferece Function
 async function inference(noisy){
-    await tf.setBackend('cpu');
     setInitial()
-
     // Add STFT
     // var noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
     var noisy_complex = await customSTFT(noisy) // e.g. [freqs : 257, frames : 193]
@@ -299,7 +297,10 @@ class testProcessor extends AudioWorkletProcessor {
     // the process method is required - output silence,
     // which the outputs are already filled with
     process (inputs, outputs, parameters) {
-        console.log(outputs[0])
+        console.log(inputs[0])
+
+        
+
         return true;
     }
 }
