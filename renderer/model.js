@@ -1,3 +1,5 @@
+const tf = require('@tensorflow/tfjs-node');
+
 const fb_model = null,
     sb_model = null,
     fb_num_neighbors = null,
@@ -288,6 +290,11 @@ async function customISTFT(input, n_fft, hop_length, win_length){
 //     }
 // }
 
+const test_component = function test(input){
+    let output = tf.tensor(input);
+    return output
+}
+
 exports = {
-    inference
+    test_component
 }

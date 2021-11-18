@@ -1,5 +1,5 @@
-const preload = require('./preload.js');
-const inference = require('../FullSubNet/model.js');
+const preload = require('./preload');
+const { test_component } = require('./model');
 // const cc = require('./FullSubNet/model.js'); //for test
 
 //Notification Function(for Pracitce)
@@ -118,7 +118,9 @@ function handleStop(){
     mediaStream.getTracks().forEach(track => track.stop());
 }
 
-function stopRec(){
+let test_result;
+
+async function stopRec(){
     //Set MediaRecorder Stop
     mic.stop();
 
@@ -129,8 +131,9 @@ function stopRec(){
         processor = null;
         audioCtx = null;
         AudioContext = null;
-        buffer = [];
     })
+
+    test_result = test_component(buffer);
 
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;

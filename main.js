@@ -1,4 +1,3 @@
-const { create } = require('domain')
 const {app, BrowserWindow, systemPreferences} = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
