@@ -1,4 +1,5 @@
 const preload = require('./preload.js');
+const inference = require('../FullSubNet/model.js');
 // const cc = require('./FullSubNet/model.js'); //for test
 
 //Notification Function(for Pracitce)
@@ -57,7 +58,7 @@ async function init(){
     });// Create AudioContext
 
     // Create createScrioptProcessor function
-    await audioCtx.audioWorklet.addModule('../FullSubNet/model.js');
+    await audioCtx.audioWorklet.addModule('./bufferProcess.js');
     processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
     processor.port.onmessage = function(e){
         console.log(e.data.message);
@@ -118,8 +119,18 @@ function handleStop(){
 }
 
 function stopRec(){
+    //Set MediaRecorder Stop
     mic.stop();
-    audioCtx.close();
+
+    //Set AudioContext Disconnect & Close
+    streamNode.disconnect(processor);
+    audioCtx.close().then(function(){
+        streamNode = null;
+        processor = null;
+        audioCtx = null;
+        AudioContext = null;
+        buffer = [];
+    })
 
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;
