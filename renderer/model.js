@@ -1,4 +1,4 @@
-const tf = require('@tensorflow/tfjs-node');
+import * as tf from '@tensorflow/tfjs'
 
 const fb_model = null,
     sb_model = null,
@@ -290,11 +290,11 @@ async function customISTFT(input, n_fft, hop_length, win_length){
 //     }
 // }
 
-const test_component = function test(input){
+function test(input){
     let output = tf.tensor(input);
     return output
 }
 
-exports = {
-    test_component
+module.exports = {
+    test : (input) => test(input),
 }

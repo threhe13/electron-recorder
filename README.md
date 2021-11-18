@@ -1,6 +1,8 @@
 # Electron-dev
 Desktop Application included Speech Enhancement Model<br>
 
+Current, meet security guideline...
+
 ## Demo
 <p align="center">
     <img src="./assets/images/demo6.png" alt="demo image" width="320px">

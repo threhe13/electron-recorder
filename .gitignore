@@ -3,4 +3,4 @@ node_modules/
 test/
 
 # File #
-./renderer.js
+.renderer/renderer.js

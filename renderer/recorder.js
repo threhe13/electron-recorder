@@ -1,10 +1,3 @@
-const preload = require('./preload');
-const { test_component } = require('./model');
-// const cc = require('./FullSubNet/model.js'); //for test
-
-//Notification Function(for Pracitce)
-showNotification.create('앱이 실행되었습니다.');
-
 // Audio Player
 // const audio = document.getElementById('microphone')
 const play_btn = document.getElementById('play')
@@ -105,9 +98,7 @@ function handleStop(){
     let blob = new Blob(chunks, {type: 'audio/wav'});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
-    waveVisualize.create(audioURL);
-
-    console.log(processor);
+    waveVisualize(audioURL);
 
     // Reset Arg
     chunks = [];
@@ -119,7 +110,6 @@ function handleStop(){
 }
 
 let test_result;
-
 async function stopRec(){
     //Set MediaRecorder Stop
     mic.stop();
@@ -133,14 +123,14 @@ async function stopRec(){
         AudioContext = null;
     })
 
-    test_result = test_component(buffer);
+    test_result = test(buffer);
 
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;
     console.log("Recording Stopped...");
 
-    play_pause.disabled = false
-    saveButton.disabled = false
+    play_pause.disabled = false;
+    saveButton.disabled = false;
 }
 
 // Add Record Event
@@ -168,7 +158,7 @@ function addList(){
         const target = e.target
         const parent = target.parentElement
         const target_audio = parent.children[0]
-        waveVisualize.create(target_audio.innerText)
+        waveVisualize(target_audio.innerText)
     })
 
     // Add in list child name

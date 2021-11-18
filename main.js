@@ -1,10 +1,6 @@
-const {app, BrowserWindow, systemPreferences} = require('electron')
+const {app, BrowserWindow, systemPreferences, ipcMain} = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
-const url = require('url')
-
-// window object. if not, be closed automatically
-// let win
 
 function createWindow(){
     // make browser window
@@ -12,27 +8,18 @@ function createWindow(){
         {
             width: 400,
             height: 600,
-            resizable: true,
+            resizable: false,
+            disableHtmlFullscreenWindowResize: true,
             webPreferences: {
-                nodeIntegration: true, //a security risk only when you're executing some untrusted remote code on your application.
-                contextIsolation: false,
+                // nodeIntegration: true, //a security risk only when you're executing some untrusted remote code on your application.  
+                // contextIsolation: false,
+                preload: path.join(__dirname, 'preload.js'),
             },
         }
     )
-    
-    // load window using url
     // load main html
-    win.loadURL(
-        // can use also 'process.env.ELECTRON_START_URL'
-        url.format(
-            {
-                pathname: path.join(__dirname, 'renderer/index.html'),
-                protocol: 'file:',
-                slashes: true,
-            }
-        )
-    )
-    // win.loadFile('index.html')
+    // Delete win.loadURL function for security
+    win.loadFile(path.join(__dirname, 'index.html'))
     
     // open DevTool option
     if (isDev) {
@@ -52,14 +39,16 @@ function createWindow(){
 }
 
 /* Electron */
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+    createWindow();
+    showNotification("앱이 실행되었습니다.");
 
-app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow()
-    }
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
 })
 
+// On mac, command+Q
 app.on('window-all-closed', () => {
-    app.quit()
+    if (process.platform !== 'darwin') app.quit();
 })
