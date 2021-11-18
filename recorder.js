@@ -42,7 +42,7 @@ const constraints = {
 
 const process_parameters = {
     processorOptions: {
-        bufferSize : 4096,
+        bufferSize : 1024,
     },
     numberOfInputs: 1,
     numberOfOutputs: 1,
@@ -59,7 +59,14 @@ async function init(){
     // Create createScrioptProcessor function
     await audioCtx.audioWorklet.addModule('./FullSubNet/model.js');
     processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
-    processor.connect(audioCtx.destination);
+    processor.port.onmessage = function(e){
+        console.log(e.data.message);
+        console.log(e.data.output)
+
+        for (let i = 0; i < process_parameters.processorOptions.bufferSize; i++){
+            buffer.push(e.data.output[i]);
+        }// Set Stream Float32Array
+    }
     audioCtx.resume();
 }
 
