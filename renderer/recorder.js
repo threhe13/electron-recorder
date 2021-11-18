@@ -57,7 +57,7 @@ async function init(){
     });// Create AudioContext
 
     // Create createScrioptProcessor function
-    await audioCtx.audioWorklet.addModule('./FullSubNet/model.js');
+    await audioCtx.audioWorklet.addModule('../FullSubNet/model.js');
     processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
     processor.port.onmessage = function(e){
         console.log(e.data.message);
