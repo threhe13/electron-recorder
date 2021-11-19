@@ -1,6 +1,6 @@
 const tf = require('@tensorflow/tfjs')
 
-const fb_model = null,
+let fb_model = null,
     sb_model = null,
     fb_num_neighbors = null,
     sb_num_neighbors = null,
