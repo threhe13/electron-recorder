@@ -1,4 +1,4 @@
-import * as tf from '@tensorflow/tfjs'
+const tf = require('@tensorflow/tfjs')
 
 const fb_model = null,
     sb_model = null,
@@ -290,11 +290,9 @@ async function customISTFT(input, n_fft, hop_length, win_length){
 //     }
 // }
 
-let convertTensor = (input) => {
+function convertTensor(input){
     let output = tf.tensor(input);
     return output
 }
 
-module.exports = {
-    convertTensor
-}
+module.exports = convertTensor

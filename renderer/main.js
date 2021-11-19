@@ -1,7 +1,7 @@
 const {app, BrowserWindow, systemPreferences, ipcMain} = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
-const fs = require('fs')
+// const fs = require('fs')
 
 let win;
 function createWindow(){
@@ -21,7 +21,7 @@ function createWindow(){
     )
     // load main html
     // Delete win.loadURL function for security
-    win.loadFile(path.join(__dirname, 'index.html'))
+    win.loadFile(path.join(__dirname, '../index.html'))
     
     // open DevTool option
     if (isDev) {

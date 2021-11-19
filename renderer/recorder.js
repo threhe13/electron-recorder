@@ -1,7 +1,4 @@
-import convertTensor from './model.js'
-
 // Audio Player
-// const audio = document.getElementById('microphone')
 const play_btn = document.getElementById('play')
 // Play/Pause Button
 const play_pause = document.getElementById('PlayPause')
@@ -125,7 +122,7 @@ async function stopRec(){
         AudioContext = null;
     })
 
-    test_result = convertTensor(buffer);
+    convert.tensor(buffer);
 
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;

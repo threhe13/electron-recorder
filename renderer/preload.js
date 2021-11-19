@@ -1,5 +1,7 @@
 const { contextBridge } = require('electron');
 const WaveSurfer = require('wavesurfer.js');
+const convertTensor = require('./model')
+const tf = require('@tensorflow/tfjs')
 
 // Notification Function
 contextBridge.exposeInMainWorld(
@@ -50,7 +52,7 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
 
     // Activate Play and Pause Button
     play_btn.onclick = function(){
-        wavesurfer.paly();
+        wavesurfer.play();
         play_btn.setAttribute('hidden', true);
         pause_btn.removeAttribute('hidden');
     }
@@ -64,3 +66,15 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
         pause_btn.setAttribute('hidden', true);
     })
 })
+
+contextBridge.exposeInMainWorld(
+    'convert', 
+    {
+        tensor : (input) => {
+            let tensor = convertTensor(input);
+            console.log(tensor)
+            tensor.print();
+        }
+    }
+)
+

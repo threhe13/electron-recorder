@@ -6,7 +6,6 @@ class bufferProcessor extends AudioWorkletProcessor {
 
         // Set initial arguments
         this._buffer = []; //empty buffer, length 4096
-        this._len = 0;
     }
     
     // reference : https://stackoverflow.com/questions/63669376/buffersize-in-audioworklet-program-results-in-glitchy-sound
@@ -29,6 +28,7 @@ class bufferProcessor extends AudioWorkletProcessor {
         for (let i = 0; i < this._buffer.length; i++){
             output[i] = this._buffer[i];
         }
+        
         this._buffer = [];
         this.port.postMessage({message, output})
     }
