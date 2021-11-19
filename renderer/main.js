@@ -43,7 +43,7 @@ function createWindow(){
 /* Electron */
 app.whenReady().then(() => {
     createWindow();
-    window.showNoti.create("앱이 실행되었습니다.");
+    showNoti.create("앱이 실행되었습니다.");
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()

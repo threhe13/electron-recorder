@@ -25,10 +25,10 @@ class bufferProcessor extends AudioWorkletProcessor {
         }
         
         let output = new Float32Array(this._bufferSize);
-        for (let i = 0; i < this._buffer.length; i++){
-            output[i] = this._buffer[i];
+        for (let i = 0; i < buffer.length; i++){
+            output[i] = buffer[i];
         }
-        
+
         this._buffer = [];
         this.port.postMessage({message, output})
     }
@@ -46,8 +46,6 @@ class bufferProcessor extends AudioWorkletProcessor {
         // this._inputProcess(inputs[0]);
         // console.log(inputs[0][0]);
         this._inputProcess(inputs[0][0]) // inputs[0][0] = [0, 0, 0.00232..., -0.323..., etc...]
-
-
         return true;
     }
 }

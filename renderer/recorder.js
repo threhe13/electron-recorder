@@ -66,12 +66,11 @@ async function init(){
 async function startRec(){
     record_start_btn.hidden = true;
     record_end_btn.hidden = false;
-    mediaStream = null;
-
     //import test -> ok!
     // cc.inference('test');
 
     init();
+    console.log(streamNode, processor, audioCtx, AudioContext, buffer, mediaStream);
     navigator.mediaDevices.getUserMedia(constraints).then(
         (stream) => {
             // console.log(stream);
@@ -106,12 +105,13 @@ function handleStop(){
 
     // Exit Stream
     mediaStream.getTracks().forEach(track => track.stop());
+    mediaStream = null;
 }
 
 let test_result;
 async function stopRec(){
     //Set MediaRecorder Stop
-    mic.stop();
+    await mic.stop();
 
     //Set AudioContext Disconnect & Close
     streamNode.disconnect(processor);
@@ -120,6 +120,7 @@ async function stopRec(){
         processor = null;
         audioCtx = null;
         AudioContext = null;
+        buffer = [];
     })
 
     convert.tensor(buffer);
