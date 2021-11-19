@@ -2,7 +2,7 @@
   "name": "electron-dev",
   "version": "0.0.1",
   "description": "develop",
-  "main": "main.js",
+  "main": "./main.js",
   "author": "SungHyun Kim",
   "license": "MIT",
   "scripts": {

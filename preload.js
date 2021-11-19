@@ -1,10 +1,15 @@
 const { contextBridge } = require('electron');
-const { WaveSurfer } = require('wavesurfer.js');
+const WaveSurfer = require('wavesurfer.js');
 
 // Notification Function
-contextBridge.exposeInMainWorld('showNotification', (contents) => {
-        new Notification("Electron-Dev", { body: contents });
-})
+contextBridge.exposeInMainWorld(
+    'showNoti',
+    {
+        create: (contents) => {
+            new Notification("Electron-Dev", { body: contents });
+        }
+    }
+)
 
 // Audio Visualization
 contextBridge.exposeInMainWorld('waveVisualize', (wave) => {

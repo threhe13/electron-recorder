@@ -290,11 +290,11 @@ async function customISTFT(input, n_fft, hop_length, win_length){
 //     }
 // }
 
-function test(input){
+let convertTensor = (input) => {
     let output = tf.tensor(input);
     return output
 }
 
 module.exports = {
-    test : (input) => test(input),
+    convertTensor
 }

@@ -1,3 +1,5 @@
+import convertTensor from './model.js'
+
 // Audio Player
 // const audio = document.getElementById('microphone')
 const play_btn = document.getElementById('play')
@@ -51,7 +53,7 @@ async function init(){
     });// Create AudioContext
 
     // Create createScrioptProcessor function
-    await audioCtx.audioWorklet.addModule('./bufferProcess.js');
+    await audioCtx.audioWorklet.addModule('renderer/bufferProcess.js');
     processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
     processor.port.onmessage = function(e){
         console.log(e.data.message);
@@ -98,7 +100,7 @@ function handleStop(){
     let blob = new Blob(chunks, {type: 'audio/wav'});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
-    waveVisualize(audioURL);
+    window.waveVisualize(audioURL);
 
     // Reset Arg
     chunks = [];
@@ -123,7 +125,7 @@ async function stopRec(){
         AudioContext = null;
     })
 
-    test_result = test(buffer);
+    test_result = convertTensor(buffer);
 
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;
@@ -158,7 +160,7 @@ function addList(){
         const target = e.target
         const parent = target.parentElement
         const target_audio = parent.children[0]
-        waveVisualize(target_audio.innerText)
+        window.waveVisualize(target_audio.innerText)
     })
 
     // Add in list child name

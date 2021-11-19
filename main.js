@@ -1,10 +1,12 @@
 const {app, BrowserWindow, systemPreferences, ipcMain} = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
+const fs = require('fs')
 
+let win;
 function createWindow(){
     // make browser window
-    const win = new BrowserWindow(
+    win = new BrowserWindow(
         {
             width: 400,
             height: 600,
@@ -41,7 +43,7 @@ function createWindow(){
 /* Electron */
 app.whenReady().then(() => {
     createWindow();
-    showNotification("앱이 실행되었습니다.");
+    window.showNoti.create("앱이 실행되었습니다.");
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
