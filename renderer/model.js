@@ -215,9 +215,6 @@ function stft(input, n_fft, hop_length, win_length){
 
 // custom STFT function
 async function customSTFT(input, n_fft, hop_length, win_length){
-    // assume window is hann
-    let window = tf.signal.hannWindow(win_length) // shape : 512
-    window = window.reshape([1, win_length])
     /*
         params
         input : e.g Tensor[49601] about 3s audio
@@ -229,32 +226,32 @@ async function customSTFT(input, n_fft, hop_length, win_length){
 
         output : [257, 193] contain reflect padding
     */
-    let length = input.shape[0]
-    let concat = null
+    let window = tf.signal.hannWindow(win_length); // 512
+    window = window.reshape([1, win_length]);
+    
+    let length = input.shape[0];
+    let temp_concat = null;
 
-    for (var i = 0; i < length; i += hop_length) {
-        if (i + hop_length > length){
-            break;
-        }
-
-        let temp = input.slice([i], [n_fft]);
-        temp = window.mul(temp); // window * frame
-        // temp.print();
+    for (var i = 0; i < length - n_fft + 1; i += hop_length) {
+        let temp = input.slice(i, n_fft);
         temp = temp.reshape([1, temp.shape[0]]);
-        temp = temp.mul(window); //element-wise multiply
-        
-        let temp_rfft = temp.rfft(); // none axis parameter
-        // console.log(temp_rfft.shape); // for debugging
-        // temp_rfft.print(); //for debugging
-        if (concat == null) {
-            concat = temp_rfft;
+        temp = temp.mul(window);
+        let temp_rfft = temp.rfft();
+        if (temp_concat == null) {
+            temp_concat = temp_rfft;
         } else {
-            concat = tf.concat([concat, temp_rfft], 0);
+            temp_concat = tf.concat([temp_concat, temp_rfft], 0);
         }
     }
 
-    concat = concat.transpose([1, 0]) // [num_freqs, num_frames]
-    return concat
+    //tfjs not support transpose about complex64 input, so need to separate real, imag
+    let output_real, output_imag;
+    [output_real, output_imag] = await sepComplex(temp_concat);
+    output_real = output_real.transpose();
+    output_imag = output_imag.transpose();
+    let output = await tf.complex(output_real, output_imag);
+
+    return output;
 }
 
 function setWindowPow(window) {
