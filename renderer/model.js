@@ -34,7 +34,7 @@ async function unfold(input, num_neighbor){
         return input
     }
 
-    var ouptut = tf.reshape(input, [batch*channel, 1, freq, frame])
+    var output = tf.reshape(input, [batch*channel, 1, freq, frame])
     var sub_band_unit_size = num_neighbor*2+1
 
     //pad
@@ -98,7 +98,7 @@ async function enhancement(noisy_mag){
 
     // Sub Band
     var noisy_mag_unfolded = unfold(noisy_mag, sb_num_neighbors)
-    noisy_mag_unfolded = tf.reshape(noisy_mag_unfolded, [batch, frqe, sb_num_neighbors*2+1, frame])
+    noisy_mag_unfolded = tf.reshape(noisy_mag_unfolded, [batch, freq, sb_num_neighbors*2+1, frame])
 
     var sb_input = tf.concat([noisy_mag_unfolded, fb_output_unfolded], 2)
     sb_input = norm(sb_input)
@@ -144,7 +144,7 @@ async function extract_patches(input, ksize, stride){
 
     let concat = null;
     for (var i = 0; i <= num_freq_padded - ksize; i += stride_col) {
-        let temp = x.stridedSlice(
+        let temp = input.stridedSlice(
             [0, i, 0, 0],
             [stride_row, ksize + i, num_frame, stride_col],
             stride
@@ -237,7 +237,7 @@ async function customSTFT(input, n_fft, hop_length, win_length){
             break;
         }
 
-        let temp = x.slice([i], [n_fft]);
+        let temp = input.slice([i], [n_fft]);
         temp = window.mul(temp); // window * frame
         // temp.print();
         temp = temp.reshape([1, temp.shape[0]]);
@@ -257,24 +257,25 @@ async function customSTFT(input, n_fft, hop_length, win_length){
     return concat
 }
 
-function setWindowPow(window){
-    // some code...
-    let window_pow = window.pow(2)
-
-    //1. create empty Tensor
-
-    //2. add to overlapping
-
-
-    return window
-}
+function setWindowPow(window) {
+    let window_pow = window.pow(2); // pow of window function
+    //1. concat window
+    let window_pow_temp = window_pow.concat(window_pow);
+    //2. zero padding at window
+    let zeros_temp = tf.zeros([256]);
+    let window_padding_temp = zeros_temp.concat(window_pow.concat(zeros_temp));
+  
+    let output_window_pow = window_pow_temp.add(window_padding_temp);
+    output_window_pow = output_window_pow.slice(256, 512); //slice to 512 tensor from 256 index
+  
+    return output_window_pow;
+  }
 
 async function customISTFT(input, n_fft, hop_length, win_length){
-    let window = tf.signal.hannWindow(512) // [512]
-    window = window.reshape([1, win_length]) // [1, 512]
-
+    let window = tf.signal.hannWindow(win_lenght); // [512]
     //Need to pow window
-    let window_pow = setWindowPow(window)
+    let window_pow = setWindowPow(window);
+    window_pow = window_pow.reshape([1, win_length]);
 
     // irfft
 
