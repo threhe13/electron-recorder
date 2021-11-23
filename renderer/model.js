@@ -50,18 +50,18 @@ async function unfold(input, num_neighbor){
     return output
 }
 
-async function mag(noisy_complex){
+function mag(noisy_complex){
     return tf.abs(noisy_complex)
 }
 
-async function decompress_cIRM(mask, K=10, limit=9.9){
+function decompress_cIRM(mask, K=10, limit=9.9){
     mask = tf.cast(mask >= limit, "float32") - limit*tf.cast(mask <= limit, "tf.float32") + mask*tf.cast(tf.abs(mask) < limit, "float32")
     mask = -K * tf.log((K-mask)/(K+mask))
 
     return mask
 }
 
-async function sepComplex(noisy_complex){
+function sepComplex(noisy_complex){
     var real = tf.real(noisy_complex)
     var imag = tf.imag(noisy_complex)
 
@@ -69,7 +69,7 @@ async function sepComplex(noisy_complex){
 }
 
 // Normalization 
-async function norm(input){
+function norm(input){
     var mu = tf.mean(input, [1, 2, 3], true)
     var normed = input/(mu+1e-5)
 
@@ -85,26 +85,26 @@ async function enhancement(noisy_mag){
     var frame = noisy_mag.shape[3]
 
     // Full Band
-    var fb_input = norm(noisy_mag)
+    var fb_input = await norm(noisy_mag)
     fb_input = tf.reshape(fb_input, [batch, channel*freq, frame])
     fb_input = tf.transpose(fb_input, [0, 2, 1])
 
-    var fb_output = fb_model.predict(fb_input)
+    var fb_output = await fb_model.predict(fb_input)
     fb_output = tf.transpose(fb_output, [0, 2, 1])
     fb_output = tf.reshape(fb_output, [batch, 1, freq, frame])
 
-    var fb_output_unfolded = unfold(fb_output, fb_num_neighbors)
+    var fb_output_unfolded = await unfold(fb_output, fb_num_neighbors)
     fb_output_unfolded = tf.reshape(fb_output_unfolded, [batch, freq, fb_num_neighbors*2+1, frame])
 
     // Sub Band
-    var noisy_mag_unfolded = unfold(noisy_mag, sb_num_neighbors)
+    var noisy_mag_unfolded = await unfold(noisy_mag, sb_num_neighbors)
     noisy_mag_unfolded = tf.reshape(noisy_mag_unfolded, [batch, freq, sb_num_neighbors*2+1, frame])
 
     var sb_input = tf.concat([noisy_mag_unfolded, fb_output_unfolded], 2)
-    sb_input = norm(sb_input)
+    sb_input = await norm(sb_input)
     sb_input = tf.transpose(sb_input, [0, 2, 1])
 
-    var sb_mask = sb_model.predict(sb_input)
+    var sb_mask = await sb_model.predict(sb_input)
     sb_mask = tf.transpose(sb_mask, [0, 2, 1])
     sb_mask = tf.reshape(sb_mask, [batch, freq, 2, frame])
     sb_mask = tf.transpose(sb_mask, [0, 2, 1, 3])
@@ -163,7 +163,7 @@ async function extract_patches(input, ksize, stride){
     return concat
 }
 
-async function depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
+function depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
     var freq_temp = pred_crm.shape[1]
     var frame_temp = pred_crm.shape[2]
 
@@ -191,10 +191,10 @@ async function inference(noisy){
 
     var pred_crm = enhancement(noisy_mag)
     pred_crm = pred_crm.transpose([0, 2, 3, 1])
-    pred_crm = decompress_cIRM(pred_crm)
-    var [noisy_complex_real, noisy_complex_imag] = sepComplex(pred_crm)
+    pred_crm = await decompress_cIRM(pred_crm)
+    var [noisy_complex_real, noisy_complex_imag] = await sepComplex(pred_crm)
 
-    var enhanced = depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm)
+    var enhanced = await depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm)
 
     // Add Inverse STFT
     enhanced = await customISTFT(enhanced)
@@ -227,30 +227,20 @@ async function customSTFT(input, n_fft, hop_length, win_length){
         output : [257, 193] contain reflect padding
     */
     let window = tf.signal.hannWindow(win_length); // 512
-    window = window.reshape([1, win_length]);
+    window = window.reshape([win_length]);
     
-    let length = input.shape[0];
-    let temp_concat = null;
-
-    for (var i = 0; i < length - n_fft + 1; i += hop_length) {
-        let temp = input.slice(i, n_fft);
-        temp = temp.reshape([1, temp.shape[0]]);
-        temp = temp.mul(window);
-        let temp_rfft = temp.rfft();
-        if (temp_concat == null) {
-            temp_concat = temp_rfft;
-        } else {
-            temp_concat = tf.concat([temp_concat, temp_rfft], 0);
-        }
-    }
-
-    //tfjs not support transpose about complex64 input, so need to separate real, imag
+    let temp_frame = tf.signal.frame(input, n_fft, hop_length);
+    
+    let rfft_input = tf.mul(temp_frame, window);
+    let temp_rfft = tf.spectral.rfft(rfft_input, n_fft);
+    
+    // set [frames, num_freq] to [num_freq, frames]
     let output_real, output_imag;
-    [output_real, output_imag] = await sepComplex(temp_concat);
-    output_real = output_real.transpose();
-    output_imag = output_imag.transpose();
-    let output = await tf.complex(output_real, output_imag);
-
+    [output_real, output_imag] = await sepComplex(temp_rfft);
+    output_real = output_real.transpose([1, 0]);
+    output_imag = output_imag.transpose([1, 0]);
+    
+    let output = tf.complex(output_real, output_imag); //[num_freqs, num_frames]
     return output;
 }
 
@@ -261,20 +251,68 @@ function setWindowPow(window) {
     //2. zero padding at window
     let zeros_temp = tf.zeros([256]);
     let window_padding_temp = zeros_temp.concat(window_pow.concat(zeros_temp));
-  
+
     let output_window_pow = window_pow_temp.add(window_padding_temp);
     output_window_pow = output_window_pow.slice(256, 512); //slice to 512 tensor from 256 index
-  
+
     return output_window_pow;
-  }
+}
 
 async function customISTFT(input, n_fft, hop_length, win_length){
-    let window = tf.signal.hannWindow(win_lenght); // [512]
-    //Need to pow window
-    let window_pow = setWindowPow(window);
-    window_pow = window_pow.reshape([1, win_length]);
+    /*
+        params
+        input : e.g [257, 192] means frequency, frames that is dtype complex tensor
+        n_fft : fft length
+        hop_length : length of overlap
+        win_length : window length 
 
-    // irfft
+        Generally n_fft equals win_length(my experience)
+
+        output : [49601] time domain signal that is dtype float32 tensor
+    */
+
+    // @pararm input : [num_freqs, num_frames], complex matrix
+    let window = tf.signal.hannWindow(win_length); // [512]
+    //Need to pow window for divide
+    let window_pow = await setWindowPow(window);
+
+    // set [num_freq, frames] to [frames, num_freq]
+    let input_real, input_imag;
+    [input_real, input_imag] = await sepComplex(input);
+    input_real = input_real.transpose([1, 0]);
+    input_imag = input_imag.transpose([1, 0]);
+
+    let complex_output = tf.complex(input_real, input_imag);
+    let input_irfft = complex_output.irfft();
+
+    let length = input_irfft.shape[1];
+    let frames = input_irfft.shape[0];
+
+    let output = null;
+    let slice_backward;
+    for (var i = 0; i < frames; i++) {
+        let temp_irfft = input_irfft.slice([i, 0], [1, length]).reshape([length]);
+        // console.log(temp_irfft.shape);
+        let temp_output = temp_irfft.mul(window);
+        temp_output = temp_output.div(window_pow);
+        // temp_output.print();
+        // stack each length 256
+
+        let slice_forward, slice_backward;
+        slice_forward = temp_irfft.slice([0], [256]);
+
+        if (output == null) {
+        output = slice_forward;
+        } else {
+        let temp_concat = slice_forward.add(slice_backward);
+        output = tf.concat([output, temp_concat]);
+        }
+
+        slice_backward = temp_irfft.slice([256], [256]);
+    }
+
+    output = tf.concat([output, slice_backward]);
+    return output;
 
     // divided by window_pow
 
