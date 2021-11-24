@@ -10,8 +10,8 @@ let fb_model = null,
     win_length = null;
 
 async function setInitial(){
-    fb_model = await tf.loadLayersModel('./fb_model/model.json')
-    sb_model = await tf.loadLayersModel('./sb_model/model.json')
+    fb_model = await tf.loadLayersModel('../FullSubNet/fb_model/model.json')
+    sb_model = await tf.loadLayersModel('../FullSubNet/sb_model/model.json')
 
     // Basic Setting
     fb_num_neighbors = 0
@@ -34,7 +34,7 @@ async function unfold(input, num_neighbor){
         return input
     }
 
-    var output = tf.reshape(input, [batch*channel, 1, freq, frame])
+    var output = input.reshape([batch*channel, 1, freq, frame])
     var sub_band_unit_size = num_neighbor*2+1
 
     //pad
@@ -55,62 +55,101 @@ function mag(noisy_complex){
 }
 
 function decompress_cIRM(mask, K=10, limit=9.9){
-    mask = tf.cast(mask >= limit, "float32") - limit*tf.cast(mask <= limit, "tf.float32") + mask*tf.cast(tf.abs(mask) < limit, "float32")
-    mask = -K * tf.log((K-mask)/(K+mask))
+    // mask.print();
+  //boolean to number
+  let temp_greater = tf.cast(mask.greaterEqual(limit), "float32");
+  let temp_less = tf.cast(mask.lessEqual(limit), "float32");
+  let new_mask = tf.cast(tf.abs(mask).less(limit), "float32");
 
-    return mask
+  //calc
+  temp_greater = temp_greater.mul(limit);
+  temp_less = temp_less.mul(limit);
+  new_mask = new_mask.mul(mask);
+  let output = temp_greater.sub(temp_less).add(new_mask);
+
+  //reference : -K * tf.log((K - temp) / (K + temp));
+  let inverse_mask = output.mul(-1);
+  output = tf.log(inverse_mask.add(K).div(output.add(K))).mul(-K);
+  return output;
 }
 
-function sepComplex(noisy_complex){
-    var real = tf.real(noisy_complex)
-    var imag = tf.imag(noisy_complex)
+function sepComplex(noisy_complex) {
+  var real = tf.real(noisy_complex);
+  var imag = tf.imag(noisy_complex);
 
-    return [real, imag]
+  return [real, imag]
 }
 
 // Normalization 
 function norm(input){
-    var mu = tf.mean(input, [1, 2, 3], true)
-    var normed = input/(mu+1e-5)
-
-    return normed
+    var mu = input.mean([1, 2, 3], true);
+    var normed = input.div(mu.add(1e-5));
+    return normed;
 }
 
 async function enhancement(noisy_mag){
-    noisy_mag = tf.pad(noisy_mag, [[0,0], [0,0], [0,0], [0, look_ahead]])
-    
-    var batch = noisy_mag.shape[0]
-    var channel = noisy_mag.shape[1]
-    var freq = noisy_mag.shape[2]
-    var frame = noisy_mag.shape[3]
+    noisy_mag = noisy_mag.pad([
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, look_ahead]
+    ]);
+
+    var batch = noisy_mag.shape[0];
+    var channel = noisy_mag.shape[1];
+    var freq = noisy_mag.shape[2];
+    var frame = noisy_mag.shape[3];
 
     // Full Band
-    var fb_input = await norm(noisy_mag)
-    fb_input = tf.reshape(fb_input, [batch, channel*freq, frame])
-    fb_input = tf.transpose(fb_input, [0, 2, 1])
+    var fb_input = await norm(noisy_mag);
+    fb_input = fb_input.reshape([batch, channel * freq, frame]);
+    fb_input = tf.transpose(fb_input, [0, 2, 1]);
 
-    var fb_output = await fb_model.predict(fb_input)
-    fb_output = tf.transpose(fb_output, [0, 2, 1])
-    fb_output = tf.reshape(fb_output, [batch, 1, freq, frame])
+    var fb_output = (await fb_model).predict(fb_input);
+    fb_output = tf.transpose(fb_output, [0, 2, 1]);
+    fb_output = tf.reshape(fb_output, [batch, 1, freq, frame]);
 
-    var fb_output_unfolded = await unfold(fb_output, fb_num_neighbors)
-    fb_output_unfolded = tf.reshape(fb_output_unfolded, [batch, freq, fb_num_neighbors*2+1, frame])
+    var fb_output_unfolded = await unfold(fb_output, fb_num_neighbors);
+    fb_output_unfolded = tf.reshape(fb_output_unfolded, [
+        batch,
+        freq,
+        fb_num_neighbors * 2 + 1,
+        frame
+    ]);
 
     // Sub Band
-    var noisy_mag_unfolded = await unfold(noisy_mag, sb_num_neighbors)
-    noisy_mag_unfolded = tf.reshape(noisy_mag_unfolded, [batch, freq, sb_num_neighbors*2+1, frame])
+    var noisy_mag_unfolded = await unfold(noisy_mag, sb_num_neighbors);
+    noisy_mag_unfolded = tf.reshape(noisy_mag_unfolded, [
+        batch,
+        freq,
+        sb_num_neighbors * 2 + 1,
+        frame
+    ]);
 
-    var sb_input = tf.concat([noisy_mag_unfolded, fb_output_unfolded], 2)
-    sb_input = await norm(sb_input)
-    sb_input = tf.transpose(sb_input, [0, 2, 1])
+    var sb_input = tf.concat([noisy_mag_unfolded, fb_output_unfolded], 2);
+    sb_input = await norm(sb_input);
+    sb_input = sb_input.reshape([
+        batch * freq,
+        sb_num_neighbors * 2 + 1 + (fb_num_neighbors * 2 + 1),
+        frame
+    ]);
+    sb_input = tf.transpose(sb_input, [0, 2, 1]);
 
-    var sb_mask = await sb_model.predict(sb_input)
-    sb_mask = tf.transpose(sb_mask, [0, 2, 1])
-    sb_mask = tf.reshape(sb_mask, [batch, freq, 2, frame])
-    sb_mask = tf.transpose(sb_mask, [0, 2, 1, 3])
+    var sb_mask = (await sb_model).predict(sb_input);
+    sb_mask = tf.transpose(sb_mask, [0, 2, 1]);
+    sb_mask = tf.reshape(sb_mask, [batch, freq, 2, frame]);
+    sb_mask = tf.transpose(sb_mask, [0, 2, 1, 3]);
 
-    var output = sb_mask.slice([0, 0, 0, 2], sb_mask.shape)
-    return output
+    let shape_q = sb_mask.shape[0],
+        shape_w = sb_mask.shape[1],
+        shape_e = sb_mask.shape[2],
+        shape_r = sb_mask.shape[3];
+
+    var output = sb_mask.slice(
+        [0, 0, 0, 2],
+        [shape_q, shape_w, shape_e, shape_r - 2]
+    );
+    return output;
 }
 
 async function extract_patches(input, ksize, stride){
@@ -163,38 +202,56 @@ async function extract_patches(input, ksize, stride){
     return concat
 }
 
-function depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
-    var freq_temp = pred_crm.shape[1]
-    var frame_temp = pred_crm.shape[2]
+function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
+    var freq_temp = pred_crm.shape[1];
+    var frame_temp = pred_crm.shape[2];
 
-    var pred_crm_real = pred_crm.slice([0,0,0,0], [1, freq_temp, frame_temp, 1])
-    var pred_crm_imag = pred_crm.slice([0,0,0,1], [1, freq_temp, frame_temp, 1])
+    noisy_complex_real = noisy_complex_real.reshape([1, freq_temp, frame_temp, 1]);
+    noisy_complex_imag = noisy_complex_imag.reshape([1, freq_temp, frame_temp, 1]);
 
-    var enhanced_real = pred_crm_real*noisy_complex_real - pred_crm_imag*noisy_complex_imag
-    var enhanced_imag = pred_crm_imag*noisy_complex_real + pred_crm_real*noisy_complex_imag
+    var pred_crm_real = pred_crm.slice(
+        [0, 0, 0, 0],
+        [1, freq_temp, frame_temp, 1]
+    );
+    var pred_crm_imag = pred_crm.slice(
+        [0, 0, 0, 1],
+        [1, freq_temp, frame_temp, 1]
+    );
 
-    var enhanced_complex = tf.complex(enhanced_real, enhanced_imag)
-    var enhanced = enhanced_complex.squeeze(0)
+    var enhanced_real = pred_crm_real.mul(noisy_complex_real).sub(pred_crm_imag.mul(noisy_complex_imag));
+    var enhanced_imag = pred_crm_imag.mul(noisy_complex_real).add(pred_crm_real.mul(noisy_complex_imag));
 
-    return enhanced
+    var enhanced_complex = tf.complex(enhanced_real, enhanced_imag);
+    var enhanced = enhanced_complex.squeeze(0).squeeze(2);
+
+    return enhanced;
 }
 
 // Inferece Function
 async function inference(noisy){
-    setInitial()
+    await setInitial()
     // Add STFT
     // var noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
-    var noisy_complex = await customSTFT(noisy) // e.g. [freqs : 257, frames : 193]
-    var noisy_mag = mag(noisy_complex)
-    noisy_mag = tf.expandDims(0) // add virtual batch
-    noisy_mag = tf.expandDims(0) // add virtual channel
+    var noisy_complex = await customSTFT(noisy, n_fft, hop_length, win_length); // e.g. [freqs : 257, frames : 193]
+    var noisy_mag = mag(noisy_complex);
 
-    var pred_crm = enhancement(noisy_mag)
-    pred_crm = pred_crm.transpose([0, 2, 3, 1])
-    pred_crm = await decompress_cIRM(pred_crm)
-    var [noisy_complex_real, noisy_complex_imag] = await sepComplex(pred_crm)
+    noisy_mag = noisy_mag.expandDims(0); // add virtual batch
+    noisy_mag = noisy_mag.expandDims(0); // add virtual channel
+    var pred_crm = await enhancement(noisy_mag);
 
-    var enhanced = await depress_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm)
+    pred_crm = pred_crm.transpose([0, 2, 3, 1]);
+    pred_crm = await decompress_cIRM(pred_crm);
+
+    var noisy_complex_real, noisy_complex_imag;
+    [noisy_complex_real, noisy_complex_imag] = await sepComplex(noisy_complex);
+
+    var enhanced = await convert_cIRM(
+        noisy_complex_real,
+        noisy_complex_imag,
+        pred_crm
+    );
+
+    // TODO : Set transpose
 
     // Add Inverse STFT
     enhanced = await customISTFT(enhanced)
