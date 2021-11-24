@@ -1,18 +1,18 @@
 # Electron-dev
 Desktop Application included Speech Enhancement Model<br>
 
-Current, meet security guideline...
+## Caution
+this project is still under development
 
 ## Demo
 <p align="center">
-    <img src="./assets/images/demo6.png" alt="demo image" width="320px">
-    <img src="./assets/images/demo6_dark.png" alt="demo image" width="320px">
+    Getting Ready...
     <!--<img src="./assets/images/demo_gif.gif" alt="demo video" width="320px">-->
 </p>
 
 ## Reference
 > Speech Enhancement Model<br>
-> - <a href="https://arxiv.org/abs/2010.15508" target="_blank">FullSubNet</a> (converted tensorflow)<br> 
+> - <a href="https://arxiv.org/abs/2010.15508" target="_blank">FullSubNet</a><br> 
 
 > Desktop Application<br>
 > - Electron : <a href="https://www.electronjs.org/" target="_blank">Electron.org</a><br>
@@ -27,7 +27,7 @@ current developing...
 2. Visual Studio Code
 3. Vanila JS
 
-### How to Start
+## How to set Electron environment
 <code>brew install node</code><br>
 <code>npm install electron --save-dev</code><br>
 Also can install <code>electron-quick-start</code> uploaded on <a href="https://github.com/electron/electron-quick-start" target="_blank">Github</a>
@@ -35,11 +35,14 @@ Also can install <code>electron-quick-start</code> uploaded on <a href="https://
 # Information
 - process : main(Backend), renderer(Frontend)
 - communication module : ipcMain, ipcRenderer, remote
+<br>
+
 
 # Requirement
-- node
-- npm
+- node@17.0.1
+- npm@8.1.0
 - electron@15.3.0
 - electron-is-dev@2.0.0 <code>npm install electron-is-dev</code>
 - electron-builder@22.13.1 <code>npm install electron-builder</code>
 - wavesurfer.js@5.2.0 <code>npm install wavesurfer.js --save</code>
+- tensorflow.js@3.11.0 <code>npm install @tensorflow/tfjs</code>
