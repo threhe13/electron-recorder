@@ -298,17 +298,18 @@ async function customISTFT(input, n_fft, hop_length, win_length){
         // temp_output.print();
         // stack each length 256
 
-        let slice_forward, slice_backward;
+        let slice_forward;
         slice_forward = temp_irfft.slice([0], [256]);
 
         if (output == null) {
-        output = slice_forward;
-        } else {
-        let temp_concat = slice_forward.add(slice_backward);
-        output = tf.concat([output, temp_concat]);
+            output = slice_forward;
+            slice_backward = temp_irfft.slice([256], [256]);
+        } 
+        else {
+            let temp_concat = slice_forward.add(slice_backward);
+            output = tf.concat([output, temp_concat]);
+            slice_backward = temp_irfft.slice([256], [256]);
         }
-
-        slice_backward = temp_irfft.slice([256], [256]);
     }
 
     output = tf.concat([output, slice_backward]);

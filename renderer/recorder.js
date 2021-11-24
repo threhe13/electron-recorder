@@ -49,6 +49,8 @@ async function init(){
         sampleRate: 16000, //Set SampleRate
     });// Create AudioContext
 
+    buffer = [];
+
     // Create createScrioptProcessor function
     await audioCtx.audioWorklet.addModule('renderer/bufferProcess.js');
     processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
@@ -120,7 +122,6 @@ async function stopRec(){
         processor = null;
         audioCtx = null;
         AudioContext = null;
-        buffer = [];
     })
 
     convert.tensor(buffer);
