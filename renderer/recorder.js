@@ -115,6 +115,8 @@ async function stopRec(){
     //Set MediaRecorder Stop
     await mic.stop();
 
+    await convert.tensor(buffer);
+
     //Set AudioContext Disconnect & Close
     streamNode.disconnect(processor);
     audioCtx.close().then(function(){
@@ -122,9 +124,8 @@ async function stopRec(){
         processor = null;
         audioCtx = null;
         AudioContext = null;
+        buffer = [];
     })
-
-    convert.tensor(buffer);
 
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;
