@@ -1,7 +1,7 @@
 const { contextBridge } = require('electron');
 const WaveSurfer = require('wavesurfer.js');
-const convertTensor = require('./model')
-const tf = require('@tensorflow/tfjs')
+const { convertTensor, inference } = require('./model');
+const tf = require('@tensorflow/tfjs');
 
 // Notification Function
 contextBridge.exposeInMainWorld(
@@ -67,13 +67,22 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     })
 })
 
+// Set convert tensor and inference function
 contextBridge.exposeInMainWorld(
     'convert', 
     {
-        tensor : (input) => {
-            let tensor = convertTensor(input);
+        tensor : async (input) => {
+            let tensor = await convertTensor(input);
             console.log(tensor)
             tensor.print();
+
+            return tensor;
+        },
+
+        inference : async (input) => {
+            let result = await inference(input);
+            console.log(result.shape)
+            result.print()
         }
     }
 )

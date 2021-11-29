@@ -16,7 +16,8 @@ let mediaStream,
     streamNode,
     mic,
     chunks = [],
-    AudioContext,
+    AudioContext = window.AudioContext || window.webkitAudioContext,
+    audioDest,
     audioCtx,
     processor,
     buffer = [];
@@ -36,6 +37,7 @@ const constraints = {
 const process_parameters = {
     processorOptions: {
         bufferSize : 1024,
+        channelCount: 1,
     },
     numberOfInputs: 1,
     numberOfOutputs: 1,
@@ -43,96 +45,136 @@ const process_parameters = {
 };
 
 //for exporting to model.js
-async function init(){
-    AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContext({
-        sampleRate: 16000, //Set SampleRate
-    });// Create AudioContext
+// async function init(){
+//     AudioContext = window.AudioContext || window.webkitAudioContext;
+//     audioCtx = new AudioContext({
+//         sampleRate: 16000, //Set SampleRate
+//     });// Create AudioContext
 
+//     // Create createScrioptProcessor function
+//     await audioCtx.audioWorklet.addModule('renderer/bufferProcess.js');
+//     processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
+//     processor.port.onmessage = function(e){
+//         console.log(e.data.message);
+//         console.log(e.data.output)
+
+//         for (let i = 0; i < process_parameters.processorOptions.bufferSize; i++){
+//             buffer.push(e.data.output[i]);
+//         }// Set Stream Float32Array
+//     }
+//     audioCtx.resume();
+// }
+
+// async function startRec(){
+//     record_start_btn.hidden = true;
+//     record_end_btn.hidden = false;
+//     //import test -> ok!
+//     // cc.inference('test');
+
+//     init();
+//     navigator.mediaDevices.getUserMedia(constraints).then(
+//         async (stream) => {
+//             // console.log(stream);
+//             mediaStream = stream
+//             // console.log(mediaStream);
+
+//             // https://stackoverflow.com/questions/55165335/how-do-you-combine-many-audio-tracks-into-one-for-mediarecorder-api
+//             streamNode = await audioCtx.createMediaStreamSource(stream);
+//             streamNode.connect(processor);
+
+//             mic = new MediaRecorder(stream);
+//             mic.ondataavailable = handleDataAvailable;
+//             mic.onstop = await handleStop;
+//             mic.start(); // Start Recording
+//             console.log("Recording has started...");
+//         }
+//     );
+// }
+
+function startRec() {
+    record_start_btn.disabled = true;
     buffer = [];
 
-    // Create createScrioptProcessor function
-    await audioCtx.audioWorklet.addModule('renderer/bufferProcess.js');
-    processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
-    processor.port.onmessage = function(e){
-        console.log(e.data.message);
-        console.log(e.data.output)
+    audioCtx = new AudioContext({ sampleRate: 16000 });
+    audioDest = audioCtx.createMediaStreamDestination();
+    let startAt = 0;
 
-        for (let i = 0; i < process_parameters.processorOptions.bufferSize; i++){
-            buffer.push(e.data.output[i]);
-        }// Set Stream Float32Array
-    }
-    audioCtx.resume();
-}
+    navigator.mediaDevices.getUserMedia(constraints).then(async (stream) => {
+        audioCtx.resume();
+        mediaStream = stream;
+        streamNode = audioCtx.createMediaStreamSource(stream);
+        audioCtx.audioWorklet.addModule("renderer/bufferProcess.js").then(() => {
+            // reference : renderer/bufferProcess.js
+            record_start_btn.hidden = true;
+            record_end_btn.hidden = false;
 
-async function startRec(){
-    record_start_btn.hidden = true;
-    record_end_btn.hidden = false;
-    //import test -> ok!
-    // cc.inference('test');
+            processor = new AudioWorkletNode(
+                audioCtx,
+                "processor",
+                process_parameters
+            );
+            processor.port.onmessage = function (e) {
+                console.log(e.data.buffer);
 
-    init();
-    console.log(streamNode, processor, audioCtx, AudioContext, buffer, mediaStream);
-    navigator.mediaDevices.getUserMedia(constraints).then(
-        (stream) => {
-            // console.log(stream);
-            mediaStream = stream
-            // console.log(mediaStream);
-            streamNode = audioCtx.createMediaStreamSource(stream);
-            streamNode.connect(processor);
+                let floats = new Float32Array(e.data.buffer);
+                let source = audioCtx.createBufferSource();
+                let buffer = audioCtx.createBuffer(1, floats.length, constraints.audio.sampleRate)
 
-            mic = new MediaRecorder(stream);
+                buffer.getChannelData(0).set(floats);
+                source.buffer = buffer;
+                source.connect(audioDest);
+                source.start();
+            };
+            streamNode.connect(processor)
+            
+            mic = new MediaRecorder(audioDest.stream);
             mic.ondataavailable = handleDataAvailable;
             mic.onstop = handleStop;
-            mic.start(); // Start Recording
-            console.log("Recording has started...");
-        }
-    );
+            mic.start();
+        }).catch((err) => console.error(err));
+    });
 }
 
 function handleDataAvailable(e){
     chunks.push(e.data);
 }
 
-function handleStop(){
+async function handleStop(){
+    console.log(mic)
     let blob = new Blob(chunks, {type: 'audio/wav'});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
     window.waveVisualize(audioURL);
-
-    // Reset Arg
-    chunks = [];
-    mic = null; 
-    // streamNode = null;
-
-    // Exit Stream
-    mediaStream.getTracks().forEach(track => track.stop());
-    mediaStream = null;
 }
 
-let test_result;
+// let test_result;
 async function stopRec(){
-    //Set MediaRecorder Stop
-    await mic.stop();
-
-    await convert.tensor(buffer);
-
     //Set AudioContext Disconnect & Close
-    streamNode.disconnect(processor);
-    audioCtx.close().then(function(){
+    // console.log(mic)
+    audioCtx.close().then(async ()  => {
+        mic.stop();
+        await mediaStream.getTracks().forEach(track => track.stop());
+
+        mediaStream = null;
         streamNode = null;
-        processor = null;
+        audioDest = null;
+        mic = null;
+        chunks = [];
         audioCtx = null;
-        AudioContext = null;
-        buffer = [];
+        processor = null;
     })
 
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;
+    record_start_btn.disabled = false;
     console.log("Recording Stopped...");
 
     play_pause.disabled = false;
     saveButton.disabled = false;
+
+    // for debugging
+    // await convert.inference(temp_buffer);
+    // temp_buffer = [];
 }
 
 // Add Record Event

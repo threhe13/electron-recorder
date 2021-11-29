@@ -1,4 +1,5 @@
 const tf = require('@tensorflow/tfjs')
+const { customSTFT, customISTFT } = require('./utils')
 
 let fb_model = null,
     sb_model = null,
@@ -10,8 +11,8 @@ let fb_model = null,
     win_length = null;
 
 async function setInitial(){
-    fb_model = await tf.loadLayersModel('../FullSubNet/fb_model/model.json')
-    sb_model = await tf.loadLayersModel('../FullSubNet/sb_model/model.json')
+    fb_model = await tf.loadLayersModel('FullSubNet/fb_model/model.json')
+    sb_model = await tf.loadLayersModel('FullSubNet/sb_model/model.json')
 
     // Basic Setting
     fb_num_neighbors = 0
@@ -57,27 +58,28 @@ function mag(noisy_complex){
 function decompress_cIRM(mask, K=10, limit=9.9){
     // mask.print();
   //boolean to number
-  let temp_greater = tf.cast(mask.greaterEqual(limit), "float32");
-  let temp_less = tf.cast(mask.lessEqual(limit), "float32");
-  let new_mask = tf.cast(tf.abs(mask).less(limit), "float32");
+    let temp_greater = tf.cast(mask.greaterEqual(limit), "float32");
+    let temp_less = tf.cast(mask.lessEqual(limit), "float32");
+    let new_mask = tf.cast(tf.abs(mask).less(limit), "float32");
 
   //calc
-  temp_greater = temp_greater.mul(limit);
-  temp_less = temp_less.mul(limit);
-  new_mask = new_mask.mul(mask);
-  let output = temp_greater.sub(temp_less).add(new_mask);
+    temp_greater = temp_greater.mul(limit);
+    temp_less = temp_less.mul(limit);
+    new_mask = new_mask.mul(mask);
+    let output = temp_greater.sub(temp_less).add(new_mask);
 
   //reference : -K * tf.log((K - temp) / (K + temp));
-  let inverse_mask = output.mul(-1);
-  output = tf.log(inverse_mask.add(K).div(output.add(K))).mul(-K);
-  return output;
-}
+    let inverse_mask = output.mul(-1);
+    output = tf.log(inverse_mask.add(K).div(output.add(K))).mul(-K);
+    return output;
+    }
 
-function sepComplex(noisy_complex) {
-  var real = tf.real(noisy_complex);
-  var imag = tf.imag(noisy_complex);
+function sepComplex(complexTensor) {
+    // Exist Error that recover the deleted dims in real, imag function... set temporary squeeze function
+    let real_temp = tf.real(complexTensor).squeeze();
+    let imag_temp = tf.imag(complexTensor).squeeze();
 
-  return [real, imag]
+    return [real_temp, imag_temp];
 }
 
 // Normalization 
@@ -87,7 +89,7 @@ function norm(input){
     return normed;
 }
 
-async function enhancement(noisy_mag){
+async function enhancement(noisy_mag) {
     noisy_mag = noisy_mag.pad([
         [0, 0],
         [0, 0],
@@ -95,21 +97,21 @@ async function enhancement(noisy_mag){
         [0, look_ahead]
     ]);
 
-    var batch = noisy_mag.shape[0];
-    var channel = noisy_mag.shape[1];
-    var freq = noisy_mag.shape[2];
-    var frame = noisy_mag.shape[3];
+    const batch = noisy_mag.shape[0],
+        channel = noisy_mag.shape[1],
+        freq = noisy_mag.shape[2],
+        frame = noisy_mag.shape[3];
 
     // Full Band
-    var fb_input = await norm(noisy_mag);
+    let fb_input = await norm(noisy_mag);
     fb_input = fb_input.reshape([batch, channel * freq, frame]);
     fb_input = tf.transpose(fb_input, [0, 2, 1]);
 
-    var fb_output = (await fb_model).predict(fb_input);
+    let fb_output = (await fb_model).predict(fb_input);
     fb_output = tf.transpose(fb_output, [0, 2, 1]);
     fb_output = tf.reshape(fb_output, [batch, 1, freq, frame]);
 
-    var fb_output_unfolded = await unfold(fb_output, fb_num_neighbors);
+    let fb_output_unfolded = await unfold(fb_output, fb_num_neighbors);
     fb_output_unfolded = tf.reshape(fb_output_unfolded, [
         batch,
         freq,
@@ -118,7 +120,7 @@ async function enhancement(noisy_mag){
     ]);
 
     // Sub Band
-    var noisy_mag_unfolded = await unfold(noisy_mag, sb_num_neighbors);
+    let noisy_mag_unfolded = await unfold(noisy_mag, sb_num_neighbors);
     noisy_mag_unfolded = tf.reshape(noisy_mag_unfolded, [
         batch,
         freq,
@@ -126,7 +128,7 @@ async function enhancement(noisy_mag){
         frame
     ]);
 
-    var sb_input = tf.concat([noisy_mag_unfolded, fb_output_unfolded], 2);
+    let sb_input = tf.concat([noisy_mag_unfolded, fb_output_unfolded], 2);
     sb_input = await norm(sb_input);
     sb_input = sb_input.reshape([
         batch * freq,
@@ -135,17 +137,17 @@ async function enhancement(noisy_mag){
     ]);
     sb_input = tf.transpose(sb_input, [0, 2, 1]);
 
-    var sb_mask = (await sb_model).predict(sb_input);
+    let sb_mask = (await sb_model).predict(sb_input);
     sb_mask = tf.transpose(sb_mask, [0, 2, 1]);
     sb_mask = tf.reshape(sb_mask, [batch, freq, 2, frame]);
     sb_mask = tf.transpose(sb_mask, [0, 2, 1, 3]);
 
-    let shape_q = sb_mask.shape[0],
+    const shape_q = sb_mask.shape[0],
         shape_w = sb_mask.shape[1],
         shape_e = sb_mask.shape[2],
         shape_r = sb_mask.shape[3];
 
-    var output = sb_mask.slice(
+    let output = sb_mask.slice(
         [0, 0, 0, 2],
         [shape_q, shape_w, shape_e, shape_r - 2]
     );
@@ -202,179 +204,71 @@ async function extract_patches(input, ksize, stride){
     return concat
 }
 
-function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm){
-    var freq_temp = pred_crm.shape[1];
-    var frame_temp = pred_crm.shape[2];
+function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm) {
+    let freq_temp = pred_crm.shape[1];
+    let frame_temp = pred_crm.shape[2];
 
-    noisy_complex_real = noisy_complex_real.reshape([1, freq_temp, frame_temp, 1]);
-    noisy_complex_imag = noisy_complex_imag.reshape([1, freq_temp, frame_temp, 1]);
+    let complex_real = noisy_complex_real.reshape([1, freq_temp, frame_temp, 1]);
+    let complex_imag = noisy_complex_imag.reshape([1, freq_temp, frame_temp, 1]);
 
-    var pred_crm_real = pred_crm.slice(
+    let pred_crm_real = pred_crm.slice(
         [0, 0, 0, 0],
         [1, freq_temp, frame_temp, 1]
     );
-    var pred_crm_imag = pred_crm.slice(
+    let pred_crm_imag = pred_crm.slice(
         [0, 0, 0, 1],
         [1, freq_temp, frame_temp, 1]
     );
 
-    var enhanced_real = pred_crm_real.mul(noisy_complex_real).sub(pred_crm_imag.mul(noisy_complex_imag));
-    var enhanced_imag = pred_crm_imag.mul(noisy_complex_real).add(pred_crm_real.mul(noisy_complex_imag));
+    let predict_real = pred_crm_real
+        .mul(complex_real)
+        .sub(pred_crm_imag.mul(complex_imag));
+    let predict_imag = pred_crm_imag
+        .mul(complex_real)
+        .add(pred_crm_real.mul(complex_imag));
 
-    var enhanced_complex = tf.complex(enhanced_real, enhanced_imag);
-    var enhanced = enhanced_complex.squeeze(0).squeeze(2);
+    let predict_complex = tf.complex(predict_real, predict_imag);
+    predict_complex = predict_complex.squeeze();
 
-    return enhanced;
+    return predict_complex;
 }
 
 // Inferece Function
-async function inference(noisy){
-    await setInitial()
+async function inference(input){
+
+    let noisy = tf.tensor(input);
+    await setInitial();
     // Add STFT
-    // var noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
-    var noisy_complex = await customSTFT(noisy, n_fft, hop_length, win_length); // e.g. [freqs : 257, frames : 193]
-    var noisy_mag = mag(noisy_complex);
+    // let noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
+    let noisy_complex = await customSTFT(noisy, n_fft, hop_length, win_length); // e.g. [freqs : 257, frames : 193]
+    let noisy_mag = mag(noisy_complex);
 
     noisy_mag = noisy_mag.expandDims(0); // add virtual batch
     noisy_mag = noisy_mag.expandDims(0); // add virtual channel
-    var pred_crm = await enhancement(noisy_mag);
+    let pred_crm = await enhancement(noisy_mag);
 
     pred_crm = pred_crm.transpose([0, 2, 3, 1]);
     pred_crm = await decompress_cIRM(pred_crm);
 
-    var noisy_complex_real, noisy_complex_imag;
+    let noisy_complex_real, noisy_complex_imag;
     [noisy_complex_real, noisy_complex_imag] = await sepComplex(noisy_complex);
 
-    var enhanced = await convert_cIRM(
+    let enhanced_noisy = await convert_cIRM(
         noisy_complex_real,
         noisy_complex_imag,
         pred_crm
     );
-
-    // TODO : Set transpose
+    //Set transpose
+    let enhanced_noisy_transpose = await complexTranspose(enhanced_noisy);
 
     // Add Inverse STFT
-    enhanced = await customISTFT(enhanced)
-    return enhanced
-}
-
-// Temporary - tfjs is not exist istft
-function stft(input, n_fft, hop_length, win_length){
-    let x = tf.signal.stft(
-        input,
+    let enhanced_output = await customISTFT(
+        enhanced_noisy_transpose,
         n_fft,
         hop_length,
-        win_length,
-        tf.signal.hannWindow
+        win_length
     );
-    return x;
-}
-
-// custom STFT function
-async function customSTFT(input, n_fft, hop_length, win_length){
-    /*
-        params
-        input : e.g Tensor[49601] about 3s audio
-        n_fft : fft length
-        hop_length : length of overlap
-        win_length : window length 
-
-        Generally n_fft equals win_length(my experience)
-
-        output : [257, 193] contain reflect padding
-    */
-    let window = tf.signal.hannWindow(win_length); // 512
-    window = window.reshape([win_length]);
-    
-    let temp_frame = tf.signal.frame(input, n_fft, hop_length);
-    
-    let rfft_input = tf.mul(temp_frame, window);
-    let temp_rfft = tf.spectral.rfft(rfft_input, n_fft);
-    
-    // set [frames, num_freq] to [num_freq, frames]
-    let output_real, output_imag;
-    [output_real, output_imag] = await sepComplex(temp_rfft);
-    output_real = output_real.transpose([1, 0]);
-    output_imag = output_imag.transpose([1, 0]);
-    
-    let output = tf.complex(output_real, output_imag); //[num_freqs, num_frames]
-    return output;
-}
-
-function setWindowPow(window) {
-    let window_pow = window.pow(2); // pow of window function
-    //1. concat window
-    let window_pow_temp = window_pow.concat(window_pow);
-    //2. zero padding at window
-    let zeros_temp = tf.zeros([256]);
-    let window_padding_temp = zeros_temp.concat(window_pow.concat(zeros_temp));
-
-    let output_window_pow = window_pow_temp.add(window_padding_temp);
-    output_window_pow = output_window_pow.slice(256, 512); //slice to 512 tensor from 256 index
-
-    return output_window_pow;
-}
-
-async function customISTFT(input, n_fft, hop_length, win_length){
-    /*
-        params
-        input : e.g [257, 192] means frequency, frames that is dtype complex tensor
-        n_fft : fft length
-        hop_length : length of overlap
-        win_length : window length 
-
-        Generally n_fft equals win_length(my experience)
-
-        output : [49601] time domain signal that is dtype float32 tensor
-    */
-
-    // @pararm input : [num_freqs, num_frames], complex matrix
-    let window = tf.signal.hannWindow(win_length); // [512]
-    //Need to pow window for divide
-    let window_pow = await setWindowPow(window);
-
-    // set [num_freq, frames] to [frames, num_freq]
-    let input_real, input_imag;
-    [input_real, input_imag] = await sepComplex(input);
-    input_real = input_real.transpose([1, 0]);
-    input_imag = input_imag.transpose([1, 0]);
-
-    let complex_output = tf.complex(input_real, input_imag);
-    let input_irfft = complex_output.irfft();
-
-    let length = input_irfft.shape[1];
-    let frames = input_irfft.shape[0];
-
-    let output = null;
-    let slice_backward;
-    for (var i = 0; i < frames; i++) {
-        let temp_irfft = input_irfft.slice([i, 0], [1, length]).reshape([length]);
-        // console.log(temp_irfft.shape);
-        let temp_output = temp_irfft.mul(window);
-        temp_output = temp_output.div(window_pow);
-        // temp_output.print();
-        // stack each length 256
-
-        let slice_forward;
-        slice_forward = temp_irfft.slice([0], [256]);
-
-        if (output == null) {
-            output = slice_forward;
-            slice_backward = temp_irfft.slice([256], [256]);
-        } 
-        else {
-            let temp_concat = slice_forward.add(slice_backward);
-            output = tf.concat([output, temp_concat]);
-            slice_backward = temp_irfft.slice([256], [256]);
-        }
-    }
-
-    output = tf.concat([output, slice_backward]);
-    return output;
-
-    // divided by window_pow
-
-    // add to overlapping
+    return enhanced_output;
 }
 
 // For testing
@@ -389,4 +283,7 @@ function convertTensor(input){
     return output
 }
 
-module.exports = convertTensor
+module.exports = {
+    convertTensor,
+    inference,
+}

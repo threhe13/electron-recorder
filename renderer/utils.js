@@ -1,3 +1,5 @@
+const tf = require('@tensorflow/tfjs')
+
 // Convert Float32Array to Uint8Array
 function convert_uint8(f32a){
     var output = new Uint8Array(f32a.length);
@@ -39,3 +41,103 @@ async function recover(url){
     // But it's type is Int8Array... we need to Float32Array
     return arrayBuffer
 }
+
+function sepComplex(noisy_complex) {
+    var _real = tf.real(noisy_complex);
+    var _imag = tf.imag(noisy_complex);
+
+    return [_real, _imag];
+}
+
+// custom STFT function
+async function customSTFT(input, n_fft, hop_length, win_length){
+    /*
+        params
+        input : e.g Tensor[49601] about 3s audio
+        n_fft : fft length
+        hop_length : length of overlap
+        win_length : window length 
+
+        Generally n_fft equals win_length(my experience)
+
+        output : [257, 193] contain reflect padding
+    */
+    let window = tf.signal.hannWindow(win_length); // 512
+
+    let temp_frame = tf.signal.frame(input, n_fft, hop_length);
+    
+    let rfft_input = tf.mul(temp_frame, window);
+    let temp_rfft = tf.spectral.rfft(rfft_input, n_fft);
+    
+    // set [frames, num_freq] to [num_freq, frames]
+    let output_real, output_imag;
+    [output_real, output_imag] = await sepComplex(temp_rfft);
+    output_real = output_real.transpose([1, 0]);
+    output_imag = output_imag.transpose([1, 0]);
+    
+    let output = tf.complex(output_real, output_imag); //[num_freqs, num_frames]
+    return output;
+}
+
+function setWindowPow(window_function) {
+    let window_pow = window_function.square(); // pow of window function
+    //1. concat window
+    let window_pow_temp = window_pow.concat(window_pow);
+    //2. zero padding at window
+    let zeros_temp = tf.zeros([256]);
+    let window_padding_temp = zeros_temp.concat(window_pow.concat(zeros_temp));
+
+    let output_window_pow = window_pow_temp.add(window_padding_temp);
+    let output = output_window_pow.slice(256, 512); //slice to 512 tensor from 256 index
+    return output;
+}
+
+async function customISTFT(input, n_fft, hop_length, win_length) {
+    /*
+        params
+        input : e.g [257, 192] means frequency, frames that is dtype complex tensor
+        n_fft : fft length
+        hop_length : length of overlap
+        win_length : window length 
+
+        Generally n_fft equals win_length(my experience)
+
+        output : [49601] time domain signal that is dtype float32 tensor
+    */
+    // @pararm input : [num_freqs, num_frames], complex matrix
+    let window_function = tf.signal.hannWindow(win_length); // [512]
+    //Need to pow window for divide
+    let window_pow = await setWindowPow(window_function);
+
+    // set [num_freq, frames] to [frames, num_freq]
+    let input_irfft = input.irfft();
+    let frames = input_irfft.shape[0];
+
+    let output = null;
+    let slice_backward;
+    for (var i = 0; i < frames; i++) {
+        let temp_irfft = input_irfft.slice([i, 0], [1, n_fft]).reshape([n_fft]);
+        let temp_output = temp_irfft.mul(window_function);
+        temp_output = temp_output.div(window_pow);
+
+        let slice_forward;
+        slice_forward = temp_irfft.slice([0], [hop_length]);
+
+        if (output == null) {
+            output = slice_forward;
+            slice_backward = temp_irfft.slice([hop_length], [hop_length]);
+        } else {
+            let temp_concat = slice_forward.add(slice_backward);
+            output = tf.concat([output, temp_concat]);
+            slice_backward = temp_irfft.slice([hop_length], [hop_length]);
+        }
+    }
+
+    output = tf.concat([output, slice_backward]);
+    return output;
+}
+
+module.exports = {
+    customSTFT,
+    customISTFT
+};
