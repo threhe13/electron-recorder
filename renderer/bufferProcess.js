@@ -44,7 +44,7 @@ class bufferProcessor extends AudioWorkletProcessor {
         // // We need only 1 channel.
         // // console.log(inputs[0][0])
         this._inputProcess(inputs[0][0]) // inputs[0][0] = [0, 0, 0.00232..., -0.323..., etc...]
-        console.log(inputs[0]);
+        // console.log(inputs[0]);
 
         return true;
     }

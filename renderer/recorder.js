@@ -114,7 +114,7 @@ function startRec() {
                 process_parameters
             );
             processor.port.onmessage = function (e) {
-                console.log(e.data.buffer);
+                // console.log(e.data.buffer);
 
                 let floats = new Float32Array(e.data.buffer);
                 let source = audioCtx.createBufferSource();
@@ -140,7 +140,7 @@ function handleDataAvailable(e){
 }
 
 async function handleStop(){
-    console.log(mic)
+    // console.log(mic)
     let blob = new Blob(chunks, {type: 'audio/wav'});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
