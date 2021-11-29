@@ -22,12 +22,10 @@ class bufferProcessor extends AudioWorkletProcessor {
         if(!message){
             return;
         }
-        
-        var output = new Float32Array(this._bufferSize);
-        output.set(buffer)
-
+        // var output = new Float32Array(this._bufferSize);
+        // output.set(buffer)
         this._buffer = [];
-        this.port.postMessage({message, output})
+        this.port.postMessage({message, buffer})
     }
 
     // the process method is required - output silence,

@@ -73,16 +73,15 @@ contextBridge.exposeInMainWorld(
     {
         tensor : async (input) => {
             let tensor = await convertTensor(input);
-            console.log(tensor)
-            tensor.print();
-
             return tensor;
         },
 
         inference : async (input) => {
-            let result = await inference(input);
-            console.log(result.shape)
-            result.print()
+            let output;
+            let tfjs_result = await inference(input);
+            // console.log(tfjs_result.print());
+            output = tfjs_result.dataSync().buffer;
+            return new Float32Array(output);
         }
     }
 )

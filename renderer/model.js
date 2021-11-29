@@ -25,28 +25,30 @@ async function setInitial(){
 
 async function unfold(input, num_neighbor){
     // assume input -> 4dim
-    var batch = input.shape[0]
-    var channel = input.shape[1]
-    var freq = input.shape[2]
-    var frame = input.shape[3]
+    var batch = input.shape[0];
+    var channel = input.shape[1];
+    var freq = input.shape[2];
+    var frame = input.shape[3];
 
     if (num_neighbor < 1){
-        input = tf.reshape(tf.transpose(input, [0, 2, 1, 3]), [batch, freq, channel, 1, frame])
+        input = tf.reshape(tf.transpose(input, [0, 2, 1, 3]), [batch, freq, channel, 1, frame]);
         return input
     }
 
-    var output = input.reshape([batch*channel, 1, freq, frame])
-    var sub_band_unit_size = num_neighbor*2+1
+    // console.log(input.shape);
+    // input.print();
+    var output = input.reshape([batch*channel, 1, freq, frame]);
+    var sub_band_unit_size = num_neighbor*2+1;
 
     //pad
-    output = tf.mirrorPad(output, [[0, 0], [0, 0], [num_neighbor, num_neighbor], [0, 0]], 'reflect')
-    output = tf.transpose(output, [0, 2, 3, 1])
+    output = tf.mirrorPad(output, [[0, 0], [0, 0], [num_neighbor, num_neighbor], [0, 0]], 'reflect');
+    output = tf.transpose(output, [0, 2, 3, 1]);
     
     // output = tf.image.extract_patches(output, sizes=[1, 257, 1, 1], strides=[1,1,1,1], rates=[1,1,1,1], padding='VALID')
-    output = extract_patches(output, 257, [1,1,1,1])
-    output = tf.reshape(output, [batch, sub_band_unit_size*frame, freq])
-    output = tf.reshape(output, [batch, channel, sub_band_unit_size, frame, freq])
-    output = tf.transpose(output, [0, 4, 1, 2, 3])
+    output = await extract_patches(output, 257, [1,1,1,1]);
+    output = tf.reshape(output, [batch, sub_band_unit_size*frame, freq]);
+    output = tf.reshape(output, [batch, channel, sub_band_unit_size, frame, freq]);
+    output = tf.transpose(output, [0, 4, 1, 2, 3]);
 
     return output
 }
@@ -154,7 +156,7 @@ async function enhancement(noisy_mag) {
     return output;
 }
 
-async function extract_patches(input, ksize, stride){
+function extract_patches(input, ksize, stride){
     // eg. input = [1, 287, 193, 1]
     /*
     Goal
@@ -183,7 +185,7 @@ async function extract_patches(input, ksize, stride){
     const stride_row = stride[1]; // 1
     const stride_col = stride[2]; // 1
 
-    let concat = null;
+    let concat_temp = null;
     for (var i = 0; i <= num_freq_padded - ksize; i += stride_col) {
         let temp = input.stridedSlice(
             [0, i, 0, 0],
@@ -194,14 +196,15 @@ async function extract_patches(input, ksize, stride){
         temp = temp.reshape([stride_row, stride_col, num_frame, ksize]);
 
         //Concatenate
-        if (concat == null) {
-            concat = temp;
+        if (concat_temp == null) {
+            concat_temp = temp;
         } else {
-            concat = tf.concat([concat, temp], 1);
+            concat_temp = tf.concat([concat_temp, temp], 1);
         }
     }
+
     //Return
-    return concat
+    return concat_temp;
 }
 
 function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm) {
@@ -233,9 +236,20 @@ function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm) {
     return predict_complex;
 }
 
+async function complexTranspose(complexTensor) {
+    // only 2Dim complex matrix
+    let complexTensor_real, complexTensor_imag;
+    [complexTensor_real, complexTensor_imag] = await sepComplex(complexTensor);
+
+    complexTensor_real = complexTensor_real.transpose();
+    complexTensor_imag = complexTensor_imag.transpose();
+
+    let output = tf.complex(complexTensor_imag, complexTensor_imag);
+    return output;
+}
+
 // Inferece Function
 async function inference(input){
-
     let noisy = tf.tensor(input);
     await setInitial();
     // Add STFT
@@ -260,7 +274,6 @@ async function inference(input){
     );
     //Set transpose
     let enhanced_noisy_transpose = await complexTranspose(enhanced_noisy);
-
     // Add Inverse STFT
     let enhanced_output = await customISTFT(
         enhanced_noisy_transpose,
@@ -268,7 +281,8 @@ async function inference(input){
         hop_length,
         win_length
     );
-    return enhanced_output;
+    
+    return enhanced_output
 }
 
 // For testing

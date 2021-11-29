@@ -134,7 +134,7 @@ async function customISTFT(input, n_fft, hop_length, win_length) {
     }
 
     output = tf.concat([output, slice_backward]);
-    return output;
+    return output
 }
 
 module.exports = {

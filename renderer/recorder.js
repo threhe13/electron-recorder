@@ -5,6 +5,7 @@ const play_pause = document.getElementById('PlayPause')
 // Record Button
 const record_start_btn = document.getElementById('record-status-start')
 const record_end_btn = document.getElementById('record-status-stop')
+let enhance = document.getElementById('enhance')
 // Media Url
 const url = document.getElementById('media')
 // WaveForm
@@ -20,7 +21,7 @@ let mediaStream,
     audioDest,
     audioCtx,
     processor,
-    buffer = [];
+    global_buffer = null;
 
 const constraints = {
     audio: {
@@ -93,11 +94,10 @@ const process_parameters = {
 
 function startRec() {
     record_start_btn.disabled = true;
-    buffer = [];
+    global_buffer = [];
 
     audioCtx = new AudioContext({ sampleRate: 16000 });
     audioDest = audioCtx.createMediaStreamDestination();
-    let startAt = 0;
 
     navigator.mediaDevices.getUserMedia(constraints).then(async (stream) => {
         audioCtx.resume();
@@ -116,7 +116,9 @@ function startRec() {
             processor.port.onmessage = function (e) {
                 // console.log(e.data.buffer);
 
-                let floats = e.data.output
+                global_buffer.push(...e.data.buffer);
+
+                let floats = new Float32Array(e.data.buffer);
                 let source = audioCtx.createBufferSource();
                 let buffer = audioCtx.createBuffer(1, floats.length, constraints.audio.sampleRate)
 
@@ -147,10 +149,43 @@ async function handleStop(){
     window.waveVisualize(audioURL);
 }
 
-// let test_result;
+async function enhancement(){
+    let tfjs_input = new Float32Array(global_buffer);
+    let tfjs_output = await convert.inference(tfjs_input);
+    // console.log(tfjs_output)
+
+    // let enhanced_voice;
+    // tfjs_output.then((e) => {
+    //     enhanced_voice = e
+    // });
+
+    audioCtx = new AudioContext({sampleRate: 16000});
+    audioDest = audioCtx.createMediaStreamDestination();
+
+    let source = audioCtx.createBufferSource(tfjs_output);
+    let buffer = audioCtx.createBuffer(1, tfjs_output.length, constraints.audio.sampleRate);
+
+    source.buffer = buffer;
+    source.connect(audioDest);
+
+    mic = new MediaRecorder(audioDest.stream);
+    mic.ondataavailable = handleDataAvailable;
+    mic.onstop = handleStop;
+
+    mic.start();
+
+    audioCtx.close().then(async () => {
+        mic.stop();
+        audioDest = null;
+        mic = null;
+        audioCtx = null;
+    })
+}
+
+enhance.addEventListener('click', enhancement);
+
 async function stopRec(){
     //Set AudioContext Disconnect & Close
-    // console.log(mic)
     audioCtx.close().then(async ()  => {
         mic.stop();
         await mediaStream.getTracks().forEach(track => track.stop());
@@ -167,11 +202,12 @@ async function stopRec(){
     record_start_btn.hidden = false;
     record_end_btn.hidden = true;
     record_start_btn.disabled = false;
+
     console.log("Recording Stopped...");
 
     play_pause.disabled = false;
     saveButton.disabled = false;
-
+    enhance.disabled = false;
     // for debugging
     // await convert.inference(temp_buffer);
     // temp_buffer = [];
