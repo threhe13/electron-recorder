@@ -116,7 +116,7 @@ function startRec() {
             processor.port.onmessage = function (e) {
                 // console.log(e.data.buffer);
 
-                let floats = new Float32Array(e.data.buffer);
+                let floats = e.data.output
                 let source = audioCtx.createBufferSource();
                 let buffer = audioCtx.createBuffer(1, floats.length, constraints.audio.sampleRate)
 

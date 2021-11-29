@@ -27,8 +27,7 @@ class bufferProcessor extends AudioWorkletProcessor {
         output.set(buffer)
 
         this._buffer = [];
-        // console.log(output);
-        this.port.postMessage({message, buffer})
+        this.port.postMessage({message, output})
     }
 
     // the process method is required - output silence,
@@ -39,12 +38,8 @@ class bufferProcessor extends AudioWorkletProcessor {
         //     return true;
         // }// if not input type is Float32Array, then return.
 
-        let len = inputs[0][0][0].length;
-
         // // We need only 1 channel.
-        // // console.log(inputs[0][0])
         this._inputProcess(inputs[0][0]) // inputs[0][0] = [0, 0, 0.00232..., -0.323..., etc...]
-        // console.log(inputs[0]);
 
         return true;
     }
