@@ -182,6 +182,8 @@ async function enhancement(){
         mic = null;
         audioCtx = null;
     })
+
+    enhance.disabled = true;
 }
 
 enhance.addEventListener('click', enhancement);

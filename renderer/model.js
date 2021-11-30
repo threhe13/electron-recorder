@@ -54,6 +54,7 @@ async function unfold(input, num_neighbor){
     return output
 }
 
+// - complete
 function mag(noisy_complex){
     return tf.abs(noisy_complex)
 }
