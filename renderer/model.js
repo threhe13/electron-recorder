@@ -10,19 +10,20 @@ let fb_model = null,
     hop_length = null,
     win_length = null;
 
-async function setInitial(){
-    fb_model = await tf.loadLayersModel('FullSubNet/fb_model/model.json')
-    sb_model = await tf.loadLayersModel('FullSubNet/sb_model/model.json')
+// function setInitial(){
+//     fb_model = tf.loadLayersModel('FullSubNet/fb_model/model.json')
+//     sb_model = tf.loadLayersModel('FullSubNet/sb_model/model.json')
 
-    // Basic Setting
-    fb_num_neighbors = 0
-    sb_num_neighbors = 15
-    look_ahead = 2
-    n_fft = 512
-    hop_length = 256
-    win_length = 512
-}
+//     // Basic Setting
+//     fb_num_neighbors = 0
+//     sb_num_neighbors = 15
+//     look_ahead = 2
+//     n_fft = 512
+//     hop_length = 256
+//     win_length = 512
+// }
 
+// - complete
 async function unfold(input, num_neighbor){
     // assume input -> 4dim
     var batch = input.shape[0];
@@ -57,24 +58,23 @@ function mag(noisy_complex){
     return tf.abs(noisy_complex)
 }
 
+//  - complete
 function decompress_cIRM(mask, K=10, limit=9.9){
-    // mask.print();
-  //boolean to number
     let temp_greater = tf.cast(mask.greaterEqual(limit), "float32");
-    let temp_less = tf.cast(mask.lessEqual(limit), "float32");
+    let temp_less = tf.cast(mask.lessEqual(-limit), "float32");
     let new_mask = tf.cast(tf.abs(mask).less(limit), "float32");
 
-  //calc
+    //calc
     temp_greater = temp_greater.mul(limit);
     temp_less = temp_less.mul(limit);
     new_mask = new_mask.mul(mask);
     let output = temp_greater.sub(temp_less).add(new_mask);
 
-  //reference : -K * tf.log((K - temp) / (K + temp));
+    //reference : -K * tf.log((K - temp) / (K + temp));
     let inverse_mask = output.mul(-1);
     output = tf.log(inverse_mask.add(K).div(output.add(K))).mul(-K);
     return output;
-    }
+}
 
 function sepComplex(complexTensor) {
     // Exist Error that recover the deleted dims in real, imag function... set temporary squeeze function
@@ -84,62 +84,49 @@ function sepComplex(complexTensor) {
     return [real_temp, imag_temp];
 }
 
-// Normalization 
+// Normalization - complete
 function norm(input){
     var mu = input.mean([1, 2, 3], true);
     var normed = input.div(mu.add(1e-5));
     return normed;
 }
 
+// - complete
 async function enhancement(noisy_mag) {
     noisy_mag = noisy_mag.pad([
         [0, 0],
         [0, 0],
         [0, 0],
         [0, look_ahead]
-    ]);
+    ]); // [1, 1, freqs, frames+look_ahead]
 
-    const batch = noisy_mag.shape[0],
-        channel = noisy_mag.shape[1],
-        freq = noisy_mag.shape[2],
-        frame = noisy_mag.shape[3];
+    const batch = noisy_mag.shape[0], // 1
+        channel = noisy_mag.shape[1], // 1
+        freq = noisy_mag.shape[2], // freqs
+        frame = noisy_mag.shape[3]; // frames + 2(look_ahead)
 
     // Full Band
     let fb_input = await norm(noisy_mag);
     fb_input = fb_input.reshape([batch, channel * freq, frame]);
     fb_input = tf.transpose(fb_input, [0, 2, 1]);
 
-    let fb_output = (await fb_model).predict(fb_input);
+    let fb_output = await fb_model.predict(fb_input);
     fb_output = tf.transpose(fb_output, [0, 2, 1]);
-    fb_output = tf.reshape(fb_output, [batch, 1, freq, frame]);
+    fb_output = fb_output.reshape([batch, 1, freq, frame]);
 
     let fb_output_unfolded = await unfold(fb_output, fb_num_neighbors);
-    fb_output_unfolded = tf.reshape(fb_output_unfolded, [
-        batch,
-        freq,
-        fb_num_neighbors * 2 + 1,
-        frame
-    ]);
+    fb_output_unfolded = fb_output_unfolded.reshape([batch, freq, fb_num_neighbors * 2 + 1, frame]);
 
     // Sub Band
     let noisy_mag_unfolded = await unfold(noisy_mag, sb_num_neighbors);
-    noisy_mag_unfolded = tf.reshape(noisy_mag_unfolded, [
-        batch,
-        freq,
-        sb_num_neighbors * 2 + 1,
-        frame
-    ]);
+    noisy_mag_unfolded = noisy_mag_unfolded.reshape([batch, freq, sb_num_neighbors * 2 + 1, frame]);
 
     let sb_input = tf.concat([noisy_mag_unfolded, fb_output_unfolded], 2);
     sb_input = await norm(sb_input);
-    sb_input = sb_input.reshape([
-        batch * freq,
-        sb_num_neighbors * 2 + 1 + (fb_num_neighbors * 2 + 1),
-        frame
-    ]);
+    sb_input = sb_input.reshape([batch * freq, (sb_num_neighbors * 2 + 1) + (fb_num_neighbors * 2 + 1), frame]);
     sb_input = tf.transpose(sb_input, [0, 2, 1]);
 
-    let sb_mask = (await sb_model).predict(sb_input);
+    let sb_mask = await sb_model.predict(sb_input);
     sb_mask = tf.transpose(sb_mask, [0, 2, 1]);
     sb_mask = tf.reshape(sb_mask, [batch, freq, 2, frame]);
     sb_mask = tf.transpose(sb_mask, [0, 2, 1, 3]);
@@ -153,9 +140,11 @@ async function enhancement(noisy_mag) {
         [0, 0, 0, 2],
         [shape_q, shape_w, shape_e, shape_r - 2]
     );
+
     return output;
 }
 
+// - complete
 function extract_patches(input, ksize, stride){
     // eg. input = [1, 287, 193, 1]
     /*
@@ -251,18 +240,36 @@ async function complexTranspose(complexTensor) {
 // Inferece Function
 async function inference(input){
     let noisy = tf.tensor(input);
-    await setInitial();
+    // await setInitial();
+
+    // load Model directly
+    fb_model = await tf.loadLayersModel('FullSubNet/fb_model/model.json');
+    sb_model = await tf.loadLayersModel('FullSubNet/sb_model/model.json');
+
+    // Basic Setting
+    fb_num_neighbors = 0;
+    sb_num_neighbors = 15;
+    look_ahead = 2;
+    n_fft = 512;
+    hop_length = 256;
+    win_length = 512;
+    
     // Add STFT
     // let noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
-    let noisy_complex = await customSTFT(noisy, n_fft, hop_length, win_length); // e.g. [freqs : 257, frames : 193]
-    let noisy_mag = mag(noisy_complex);
+    let noisy_complex = await customSTFT(noisy, n_fft, hop_length, win_length); // e.g. [frames : 193, freqs : 257]
+    let noisy_mag = await mag(noisy_complex); // magnitude
+    noisy_mag = tf.transpose(noisy_mag, [1, 0]); // Result of STFT convert to [freqs, frames]
 
-    noisy_mag = noisy_mag.expandDims(0); // add virtual batch
-    noisy_mag = noisy_mag.expandDims(0); // add virtual channel
+    let freq = noisy_mag.shape[0];
+    let frame = noisy_mag.shape[1];
+
+    noisy_mag = noisy_mag.reshape([1, 1, freq, frame]);
+    // current noisy_mag shape [1, 1, freqs, frames]
     let pred_crm = await enhancement(noisy_mag);
 
     pred_crm = pred_crm.transpose([0, 2, 3, 1]);
     pred_crm = await decompress_cIRM(pred_crm);
+    console.log(pred_crm.shape); // for debugging
 
     let noisy_complex_real, noisy_complex_imag;
     [noisy_complex_real, noisy_complex_imag] = await sepComplex(noisy_complex);
@@ -284,13 +291,6 @@ async function inference(input){
     
     return enhanced_output
 }
-
-// For testing
-// module.exports = {
-//     inference: (context) => {
-//         console.log(context)
-//     }
-// }
 
 function convertTensor(input){
     let output = tf.tensor(input);

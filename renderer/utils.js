@@ -49,7 +49,7 @@ function sepComplex(noisy_complex) {
     return [_real, _imag];
 }
 
-// custom STFT function
+// custom STFT function  - complete
 async function customSTFT(input, n_fft, hop_length, win_length){
     /*
         params
@@ -69,16 +69,10 @@ async function customSTFT(input, n_fft, hop_length, win_length){
     let rfft_input = tf.mul(temp_frame, window);
     let temp_rfft = tf.spectral.rfft(rfft_input, n_fft);
     
-    // set [frames, num_freq] to [num_freq, frames]
-    let output_real, output_imag;
-    [output_real, output_imag] = await sepComplex(temp_rfft);
-    output_real = output_real.transpose([1, 0]);
-    output_imag = output_imag.transpose([1, 0]);
-    
-    let output = tf.complex(output_real, output_imag); //[num_freqs, num_frames]
-    return output;
+    return temp_rfft;
 }
 
+//  - complete
 function setWindowPow(window_function) {
     let window_pow = window_function.square(); // pow of window function
     //1. concat window
@@ -92,6 +86,7 @@ function setWindowPow(window_function) {
     return output;
 }
 
+// - complete
 async function customISTFT(input, n_fft, hop_length, win_length) {
     /*
         params
@@ -121,15 +116,15 @@ async function customISTFT(input, n_fft, hop_length, win_length) {
         temp_output = temp_output.div(window_pow);
 
         let slice_forward;
-        slice_forward = temp_irfft.slice([0], [hop_length]);
+        slice_forward = temp_output.slice([0], [hop_length]);
 
         if (output == null) {
             output = slice_forward;
-            slice_backward = temp_irfft.slice([hop_length], [hop_length]);
+            slice_backward = temp_output.slice([hop_length], [hop_length]);
         } else {
             let temp_concat = slice_forward.add(slice_backward);
             output = tf.concat([output, temp_concat]);
-            slice_backward = temp_irfft.slice([hop_length], [hop_length]);
+            slice_backward = temp_output.slice([hop_length], [hop_length]);
         }
     }
 

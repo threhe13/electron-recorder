@@ -43,11 +43,10 @@ function createWindow(){
 /* Electron */
 app.whenReady().then(() => {
     createWindow();
-    showNoti.create("앱이 실행되었습니다.");
+})
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    })
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
 })
 
 // On mac, command+Q

@@ -149,10 +149,12 @@ async function handleStop(){
     window.waveVisualize(audioURL);
 }
 
+let test;
 async function enhancement(){
     let tfjs_input = new Float32Array(global_buffer);
     let tfjs_output = await convert.inference(tfjs_input);
     // console.log(tfjs_output)
+    test = tfjs_output;
 
     // let enhanced_voice;
     // tfjs_output.then((e) => {
