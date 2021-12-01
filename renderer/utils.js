@@ -90,7 +90,7 @@ function setWindowPow(window_function) {
 async function customISTFT(input, n_fft, hop_length, win_length) {
     /*
         params
-        input : e.g [257, 192] means frequency, frames that is dtype complex tensor
+        input : e.g [192, 257] means frames, frequencythat is dtype complex tensor
         n_fft : fft length
         hop_length : length of overlap
         win_length : window length 

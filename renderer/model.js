@@ -138,8 +138,8 @@ async function enhancement(noisy_mag) {
         shape_r = sb_mask.shape[3];
 
     let output = sb_mask.slice(
-        [0, 0, 0, 2],
-        [shape_q, shape_w, shape_e, shape_r - 2]
+        [0, 0, 0, 0],
+        [shape_q, shape_w, shape_e, shape_r - look_ahead]
     );
 
     return output;
@@ -197,6 +197,7 @@ function extract_patches(input, ksize, stride){
     return concat_temp;
 }
 
+// - complete
 function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm) {
     let freq_temp = pred_crm.shape[1];
     let frame_temp = pred_crm.shape[2];
@@ -204,21 +205,11 @@ function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm) {
     let complex_real = noisy_complex_real.reshape([1, freq_temp, frame_temp, 1]);
     let complex_imag = noisy_complex_imag.reshape([1, freq_temp, frame_temp, 1]);
 
-    let pred_crm_real = pred_crm.slice(
-        [0, 0, 0, 0],
-        [1, freq_temp, frame_temp, 1]
-    );
-    let pred_crm_imag = pred_crm.slice(
-        [0, 0, 0, 1],
-        [1, freq_temp, frame_temp, 1]
-    );
+    let pred_crm_real = pred_crm.slice([0, 0, 0, 0], [1, freq_temp, frame_temp, 1]);
+    let pred_crm_imag = pred_crm.slice([0, 0, 0, 1], [1, freq_temp, frame_temp, 1]);
 
-    let predict_real = pred_crm_real
-        .mul(complex_real)
-        .sub(pred_crm_imag.mul(complex_imag));
-    let predict_imag = pred_crm_imag
-        .mul(complex_real)
-        .add(pred_crm_real.mul(complex_imag));
+    let predict_real = pred_crm_real.mul(complex_real).sub(pred_crm_imag.mul(complex_imag));
+    let predict_imag = pred_crm_imag.mul(complex_real).add(pred_crm_real.mul(complex_imag));
 
     let predict_complex = tf.complex(predict_real, predict_imag);
     predict_complex = predict_complex.squeeze();
@@ -263,23 +254,26 @@ async function inference(input){
 
     let freq = noisy_mag.shape[0];
     let frame = noisy_mag.shape[1];
+    noisy_mag = noisy_mag.reshape([1, 1, freq, frame]); // expands dims
 
-    noisy_mag = noisy_mag.reshape([1, 1, freq, frame]);
     // current noisy_mag shape [1, 1, freqs, frames]
     let pred_crm = await enhancement(noisy_mag);
-
     pred_crm = pred_crm.transpose([0, 2, 3, 1]);
     pred_crm = await decompress_cIRM(pred_crm);
-    console.log(pred_crm.shape); // for debugging
+    // console.log(pred_crm.shape); // for debugging
 
     let noisy_complex_real, noisy_complex_imag;
     [noisy_complex_real, noisy_complex_imag] = await sepComplex(noisy_complex);
+    // noisy_complex_real.print();
+    // noisy_complex_imag.print();
 
     let enhanced_noisy = await convert_cIRM(
         noisy_complex_real,
         noisy_complex_imag,
         pred_crm
     );
+    // console.log(enhanced_noisy.shape);
+
     //Set transpose
     let enhanced_noisy_transpose = await complexTranspose(enhanced_noisy);
     // Add Inverse STFT

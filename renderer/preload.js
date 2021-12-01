@@ -80,8 +80,8 @@ contextBridge.exposeInMainWorld(
             let output;
             let tfjs_result = await inference(input);
             // console.log(tfjs_result.print());
-            output = tfjs_result.dataSync().buffer;
-            return new Float32Array(output);
+            output = tfjs_result.dataSync();
+            return output
         }
     }
 )

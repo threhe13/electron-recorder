@@ -45,6 +45,8 @@ const process_parameters = {
     channelCount: 1,
 };
 
+const mimeType = 'audio/webm;codecs=opus'
+
 //for exporting to model.js
 // async function init(){
 //     AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -95,6 +97,7 @@ const process_parameters = {
 function startRec() {
     record_start_btn.disabled = true;
     global_buffer = [];
+    console.log("recording started...");
 
     audioCtx = new AudioContext({ sampleRate: 16000 });
     audioDest = audioCtx.createMediaStreamDestination();
@@ -130,6 +133,7 @@ function startRec() {
             streamNode.connect(processor)
             
             mic = new MediaRecorder(audioDest.stream);
+            // console.log(audioDest.stream)
             mic.ondataavailable = handleDataAvailable;
             mic.onstop = handleStop;
             mic.start();
@@ -138,52 +142,63 @@ function startRec() {
 }
 
 function handleDataAvailable(e){
+    // console.log(e.data)
     chunks.push(e.data);
 }
 
 async function handleStop(){
-    // console.log(mic)
-    let blob = new Blob(chunks, {type: 'audio/wav'});
+    // console.log(chunks) 
+    //chuncks = [Blob]
+    let blob = new Blob(chunks, {type: mimeType});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
-    window.waveVisualize(audioURL);
+    waveVisualize(audioURL);
+
+    chunks.pop();
 }
 
 let test;
 async function enhancement(){
+    console.log('enhanced...')
     let tfjs_input = new Float32Array(global_buffer);
     let tfjs_output = await convert.inference(tfjs_input);
-    // console.log(tfjs_output)
-    test = tfjs_output;
-
-    // let enhanced_voice;
-    // tfjs_output.then((e) => {
-    //     enhanced_voice = e
-    // });
+    
+    test = tfjs_output; // for debugging
 
     audioCtx = new AudioContext({sampleRate: 16000});
+    audioCtx.resume();
+
+    // applied_result = new Uint16Array(tfjs_output.buffer);
+
     audioDest = audioCtx.createMediaStreamDestination();
-
-    let source = audioCtx.createBufferSource(tfjs_output);
+    // let buffer = audioCtx.createBuffer(1, applied_result.length, constraints.audio.sampleRate);
     let buffer = audioCtx.createBuffer(1, tfjs_output.length, constraints.audio.sampleRate);
+    buffer.getChannelData(0).set(tfjs_output);
 
-    source.buffer = buffer;
+    let source = audioCtx.createBufferSource();
+    source.buffer = buffer
     source.connect(audioDest);
-
+    
     mic = new MediaRecorder(audioDest.stream);
+    console.log(chunks)
     mic.ondataavailable = handleDataAvailable;
     mic.onstop = handleStop;
 
     mic.start();
+    source.start();
 
-    audioCtx.close().then(async () => {
-        mic.stop();
-        audioDest = null;
-        mic = null;
-        audioCtx = null;
-    })
+    source.onended = e => {
+        audioCtx.close().then(() => {
+            mic.stop();
+            audioCtx = null;
+            audioDest = null;
+            mic = null;
+        })
+    }
 
+    // delete enhancement button
     enhance.disabled = true;
+    console.log('complete enhancement')
 }
 
 enhance.addEventListener('click', enhancement);
@@ -198,7 +213,6 @@ async function stopRec(){
         streamNode = null;
         audioDest = null;
         mic = null;
-        chunks = [];
         audioCtx = null;
         processor = null;
     })
