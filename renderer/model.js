@@ -1,5 +1,5 @@
 const tf = require('@tensorflow/tfjs')
-const { customSTFT, customISTFT } = require('./utils')
+const { customSTFT, customISTFT, sepComplex } = require('./utils')
 
 let fb_model = null,
     sb_model = null,
@@ -73,17 +73,16 @@ function decompress_cIRM(mask, K=10, limit=9.9){
 
     //reference : -K * tf.log((K - temp) / (K + temp));
     let inverse_mask = output.mul(-1);
-    output = tf.log(inverse_mask.add(K).div(output.add(K))).mul(-K);
+    output = tf.log(inverse_mask.add(K).divNoNan(output.add(K))).mul(-K);
     return output;
 }
 
-function sepComplex(complexTensor) {
-    // Exist Error that recover the deleted dims in real, imag function... set temporary squeeze function
-    let real_temp = tf.real(complexTensor).squeeze();
-    let imag_temp = tf.imag(complexTensor).squeeze();
-
-    return [real_temp, imag_temp];
-}
+// function sepComplex(complexTensor) {
+//     // Exist Error that recover the deleted dims in real, imag function... set temporary squeeze function
+//     let real_temp = tf.real(complexTensor);
+//     let imag_temp = tf.imag(complexTensor);
+//     return [real_temp, imag_temp];
+// }
 
 // Normalization - complete
 function norm(input){
@@ -137,10 +136,7 @@ async function enhancement(noisy_mag) {
         shape_e = sb_mask.shape[2],
         shape_r = sb_mask.shape[3];
 
-    let output = sb_mask.slice(
-        [0, 0, 0, 0],
-        [shape_q, shape_w, shape_e, shape_r - look_ahead]
-    );
+    let output = sb_mask.slice([0, 0, 0, look_ahead], [shape_q, shape_w, shape_e, shape_r - look_ahead]);
 
     return output;
 }
@@ -211,6 +207,9 @@ function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm) {
     let predict_real = pred_crm_real.mul(complex_real).sub(pred_crm_imag.mul(complex_imag));
     let predict_imag = pred_crm_imag.mul(complex_real).add(pred_crm_real.mul(complex_imag));
 
+    predict_real = predict_real.transpose();
+    predict_imag = predict_imag.transpose();
+
     let predict_complex = tf.complex(predict_real, predict_imag);
     predict_complex = predict_complex.squeeze();
 
@@ -220,12 +219,12 @@ function convert_cIRM(noisy_complex_real, noisy_complex_imag, pred_crm) {
 async function complexTranspose(complexTensor) {
     // only 2Dim complex matrix
     let complexTensor_real, complexTensor_imag;
-    [complexTensor_real, complexTensor_imag] = await sepComplex(complexTensor);
+    [complexTensor_real, complexTensor_imag] = sepComplex(complexTensor);
 
     complexTensor_real = complexTensor_real.transpose();
     complexTensor_imag = complexTensor_imag.transpose();
 
-    let output = tf.complex(complexTensor_imag, complexTensor_imag);
+    let output = tf.complex(complexTensor_real, complexTensor_imag);
     return output;
 }
 
@@ -249,7 +248,7 @@ async function inference(input){
     // Add STFT
     // let noisy_complex = await stft(noisy, n_fft, hop_length, win_length)
     let noisy_complex = await customSTFT(noisy, n_fft, hop_length, win_length); // e.g. [frames : 193, freqs : 257]
-    let noisy_mag = await mag(noisy_complex); // magnitude
+    let noisy_mag = await mag(noisy_complex); // magnitude, not complex tensor
     noisy_mag = tf.transpose(noisy_mag, [1, 0]); // Result of STFT convert to [freqs, frames]
 
     let freq = noisy_mag.shape[0];
@@ -263,9 +262,7 @@ async function inference(input){
     // console.log(pred_crm.shape); // for debugging
 
     let noisy_complex_real, noisy_complex_imag;
-    [noisy_complex_real, noisy_complex_imag] = await sepComplex(noisy_complex);
-    // noisy_complex_real.print();
-    // noisy_complex_imag.print();
+    [noisy_complex_real, noisy_complex_imag] = sepComplex(noisy_complex);
 
     let enhanced_noisy = await convert_cIRM(
         noisy_complex_real,
@@ -275,10 +272,10 @@ async function inference(input){
     // console.log(enhanced_noisy.shape);
 
     //Set transpose
-    let enhanced_noisy_transpose = await complexTranspose(enhanced_noisy);
+    // let enhanced_noisy_transpose = await complexTranspose(enhanced_noisy);
     // Add Inverse STFT
     let enhanced_output = await customISTFT(
-        enhanced_noisy_transpose,
+        enhanced_noisy,
         n_fft,
         hop_length,
         win_length

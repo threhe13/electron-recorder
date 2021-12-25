@@ -2,6 +2,8 @@ const { contextBridge } = require('electron');
 const WaveSurfer = require('wavesurfer.js');
 const { convertTensor, inference } = require('./model');
 const tf = require('@tensorflow/tfjs');
+const child = require('child_process');
+
 
 // Notification Function
 contextBridge.exposeInMainWorld(
@@ -86,3 +88,11 @@ contextBridge.exposeInMainWorld(
     }
 )
 
+contextBridge.exposeInMainWorld(
+    'python',
+    {
+        inference : async (wav) => {
+            
+        }
+    }
+)

@@ -49,6 +49,29 @@ function sepComplex(noisy_complex) {
     return [_real, _imag];
 }
 
+function customDFT(input) {
+    /*
+    @Params
+    input : 1D Tensor
+    output : 1D Tensor consisted of complex number
+    */
+    let N = input.shape[0];
+    let n = tf.range(0, N, 1, "float32");
+    let k = n.reshape([N, 1]);
+  
+    let w = (-2 * Math.PI) / N;
+    w = k.mul(n).mul(w);
+  
+    let sp = tf.zeros([w.shape[0], w.shape[1]]);
+  
+    //Real
+    let M_real = tf.exp(sp).mul(tf.cos(w));
+    //Imag
+    let M_imag = tf.exp(sp).mul(tf.sin(w));
+  
+    return tf.complex(tf.dot(M_real, input).round(), tf.dot(M_imag, input));
+  }
+
 // custom STFT function  - complete
 async function customSTFT(input, n_fft, hop_length, win_length){
     /*
@@ -66,8 +89,8 @@ async function customSTFT(input, n_fft, hop_length, win_length){
 
     let temp_frame = tf.signal.frame(input, n_fft, hop_length);
     
-    let rfft_input = tf.mul(temp_frame, window);
-    let temp_rfft = tf.spectral.rfft(rfft_input, n_fft);
+    let rfft_input = temp_frame.mul(window)
+    let temp_rfft = rfft_input.rfft();
     
     return temp_rfft;
 }
@@ -106,6 +129,7 @@ async function customISTFT(input, n_fft, hop_length, win_length) {
 
     // set [num_freq, frames] to [frames, num_freq]
     let input_irfft = input.irfft();
+    // console.log(input_irfft.shape)
     let frames = input_irfft.shape[0];
 
     let output = null;
@@ -134,5 +158,6 @@ async function customISTFT(input, n_fft, hop_length, win_length) {
 
 module.exports = {
     customSTFT,
-    customISTFT
+    customISTFT,
+    sepComplex
 };

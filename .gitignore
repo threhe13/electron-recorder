@@ -1,6 +1,8 @@
 # Directory #
 node_modules/
 test/
+inference/
 
 # File #
 .renderer/renderer.js
+.DS_Store

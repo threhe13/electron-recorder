@@ -21,8 +21,6 @@ this project is still under development
 > - Images : <a href="https://www.flaticon.com/" target="_blank">Flaticon</a>
 
 ### Develop Environment
-current developing...
-
 1. MacOS(~~Big Sur~~ Monterey, <code>Intel</code>)
 2. Visual Studio Code
 3. Vanila JS
@@ -36,7 +34,6 @@ Also can install <code>electron-quick-start</code> uploaded on <a href="https://
 - process : main(Backend), renderer(Frontend)
 - communication module : ipcMain, ipcRenderer, remote
 <br>
-
 
 # Requirement
 - node@17.0.1
