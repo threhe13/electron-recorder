@@ -2,7 +2,7 @@ const { contextBridge } = require('electron');
 const WaveSurfer = require('wavesurfer.js');
 const { convertTensor, inference } = require('./model');
 const tf = require('@tensorflow/tfjs');
-const child = require('child_process');
+const child = require('child_process').spawn;
 
 
 // Notification Function
@@ -91,8 +91,31 @@ contextBridge.exposeInMainWorld(
 contextBridge.exposeInMainWorld(
     'python',
     {
-        inference : async (wav) => {
-            
+        // Complete Test 
+        test : async (comment) => {
+            let create_log = child("python", ["inference/test.py", comment]);
+            create_log.stdout.on('data', (data) => {
+                console.log(data);
+            })
+        },
+        
+        inference : async (wav_file) => {
+            let enhanced_wav = child("python", ["inference/model.py", wav_file]);
+            enhanced_wav.stdout.on('data', (data) => {
+                console.log(data);
+            })
+        }
+    }
+)
+
+contextBridge.exposeInMainWorld(
+    'utils',
+    {
+        download : async (blob, file_name) => {
+            let aElement = document.createElement("a");
+            aElement.href = blob;
+            aElement.download = file_name;
+            aElement.click();
         }
     }
 )

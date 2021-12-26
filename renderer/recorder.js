@@ -133,6 +133,7 @@ function startRec() {
             streamNode.connect(processor)
             
             mic = new MediaRecorder(audioDest.stream);
+            console.log(MediaRecorder.isTypeSupported("audio/wav;codes=MS_PCM"));
             // console.log(audioDest.stream)
             mic.ondataavailable = handleDataAvailable;
             mic.onstop = handleStop;
@@ -149,7 +150,7 @@ function handleDataAvailable(e){
 async function handleStop(){
     // console.log(chunks) 
     //chuncks = [Blob]
-    let blob = new Blob(chunks, {type: mimeType});
+    let blob = new Blob(chunks, {"type": mimeType});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
     waveVisualize(audioURL);
