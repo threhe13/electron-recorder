@@ -103,9 +103,8 @@ contextBridge.exposeInMainWorld(
         inference : async (webm_file) => {
             let enhanced_wav = child("python", ["inference/model.py", webm_file]);
             enhanced_wav.stdout.on('data', (data) => {
-                console.log(data);
+                return data;
             })
-            return enhanced_wav;
         }
     }
 )
@@ -126,6 +125,11 @@ contextBridge.exposeInMainWorld(
             });
 
             return file_name;
+        },
+
+        mkdir : (dirPath) => {
+            const isExist = fs.existsSync(dirPath);
+            if(!isExist) fs.mkdirSync(dirPath, {recursive: true});
         },
 
         loadList : () => {

@@ -102,7 +102,7 @@ function handleDataAvailable(e){
     chunks.push(e.data);
 }
 
-async function handleStop(){
+function handleStop(){
     let blob = new Blob(chunks, {"type": mimeType});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
@@ -155,7 +155,8 @@ async function handleStop(){
 // }
 
 enhance.addEventListener('click', () => {
-    
+    let webm_file = "storage\\2021_11_27-17_46_48.webm";
+    python.inference(webm_file);
 });
 
 
@@ -196,8 +197,11 @@ record_end_btn.addEventListener('click', stopRec);
 saveButton.addEventListener('click', download);
 
 async function download(){
+    let path = "storage/";
+    utils.mkdir(path);
+
     let webm_file = url.innerText;
-    let fileName = utils.download(webm_file);
+    let fileName = utils.download(webm_file); //fileName == storage/[fileName]
     addList(fileName);
 }
 
