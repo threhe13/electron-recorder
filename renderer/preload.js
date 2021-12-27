@@ -1,4 +1,5 @@
 const { contextBridge } = require('electron');
+const fs = require('fs');
 const WaveSurfer = require('wavesurfer.js');
 const { convertTensor, inference } = require('./model');
 const tf = require('@tensorflow/tfjs');
@@ -99,11 +100,12 @@ contextBridge.exposeInMainWorld(
             })
         },
         
-        inference : async (wav_file) => {
-            let enhanced_wav = child("python", ["inference/model.py", wav_file]);
+        inference : async (webm_file) => {
+            let enhanced_wav = child("python", ["inference/model.py", webm_file]);
             enhanced_wav.stdout.on('data', (data) => {
                 console.log(data);
             })
+            return enhanced_wav;
         }
     }
 )
@@ -111,13 +113,47 @@ contextBridge.exposeInMainWorld(
 contextBridge.exposeInMainWorld(
     'utils',
     {
-        download : async (blob) => {
-            let aElement = document.createElement("a");
-            aElement.href = blob;
-            const date = new Date()
-            const name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds()
-            aElement.download = name + ".webm";
-            aElement.click();
+        download : (blob) => {
+            //Setting file name using Date
+            let path = "storage/";
+            let date = new Date();
+            let name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds();
+            let file_name = path+name+".webm";
+
+            // Append File in Directory
+            fs.writeFile(file_name, blob, (err, result) => {
+                if(err) console.log("error:", err);
+            });
+
+            return file_name;
+        },
+
+        loadList : () => {
+            const listDiv = document.getElementById('list');
+            let path = "storage/";
+            let files;
+        
+            listDiv.innerHTML = "";
+            fs.readdir(path, (err, fileList) => {
+                if(err) console.log("error:", err);
+                files = fileList;
+        
+                fileList = fileList.filter(item => !(/(^|\/)\.[^\/\/.]/g.test(item))); // ignore hidden junk file
+                fileList.forEach(element => {
+                    // console.log(element);
+                    let liElement = document.createElement('li');
+                    let spanElement = document.createElement('span');
+
+                    spanElement.innerText = element;
+                    liElement.appendChild(spanElement);
+                    // liElement.addEventListener('click', () => {
+                    //     waveVisualize(path+element);
+                    // })
+                    listDiv.appendChild(liElement);
+                });
+            });
+
+            return files;
         }
     }
 )

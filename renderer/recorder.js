@@ -1,6 +1,3 @@
-// const { MediaRecorder, register } = require('extendable-media-recorder');
-// const connect = require('extendable-media-recorder-wav-encoder');
-
 // Audio Player
 const play_btn = document.getElementById('play')
 // Play/Pause Button
@@ -8,7 +5,7 @@ const play_pause = document.getElementById('PlayPause')
 // Record Button
 const record_start_btn = document.getElementById('record-status-start')
 const record_end_btn = document.getElementById('record-status-stop')
-let enhance = document.getElementById('enhance')
+const enhance = document.getElementById('enhance')
 // Media Url
 const url = document.getElementById('media')
 // WaveForm
@@ -49,53 +46,6 @@ const process_parameters = {
 };
 
 const mimeType = 'audio/webm;codecs=opus'
-
-//for exporting to model.js
-// async function init(){
-//     AudioContext = window.AudioContext || window.webkitAudioContext;
-//     audioCtx = new AudioContext({
-//         sampleRate: 16000, //Set SampleRate
-//     });// Create AudioContext
-
-//     // Create createScrioptProcessor function
-//     await audioCtx.audioWorklet.addModule('renderer/bufferProcess.js');
-//     processor = new AudioWorkletNode(audioCtx, 'processor', process_parameters);
-//     processor.port.onmessage = function(e){
-//         console.log(e.data.message);
-//         console.log(e.data.output)
-
-//         for (let i = 0; i < process_parameters.processorOptions.bufferSize; i++){
-//             buffer.push(e.data.output[i]);
-//         }// Set Stream Float32Array
-//     }
-//     audioCtx.resume();
-// }
-
-// async function startRec(){
-//     record_start_btn.hidden = true;
-//     record_end_btn.hidden = false;
-//     //import test -> ok!
-//     // cc.inference('test');
-
-//     init();
-//     navigator.mediaDevices.getUserMedia(constraints).then(
-//         async (stream) => {
-//             // console.log(stream);
-//             mediaStream = stream
-//             // console.log(mediaStream);
-
-//             // https://stackoverflow.com/questions/55165335/how-do-you-combine-many-audio-tracks-into-one-for-mediarecorder-api
-//             streamNode = await audioCtx.createMediaStreamSource(stream);
-//             streamNode.connect(processor);
-
-//             mic = new MediaRecorder(stream);
-//             mic.ondataavailable = handleDataAvailable;
-//             mic.onstop = await handleStop;
-//             mic.start(); // Start Recording
-//             console.log("Recording has started...");
-//         }
-//     );
-// }
 
 async function startRec() {
     record_start_btn.disabled = true;
@@ -153,65 +103,61 @@ function handleDataAvailable(e){
 }
 
 async function handleStop(){
-    // console.log(chunks) 
-    //chuncks = [Blob]
     let blob = new Blob(chunks, {"type": mimeType});
     let audioURL = URL.createObjectURL(blob);
     url.innerHTML = audioURL;
     waveVisualize(audioURL);
-
-    chunks.pop();
+    chunks.pop(); // chunks = [Blob]
 }
 
-let test;
-async function enhancement(){
-    console.log('enhanced...')
-    let tfjs_input = new Float32Array(global_buffer);
-    let tfjs_output = await convert.inference(tfjs_input);
+// let test;
+// async function enhancement(){
+//     console.log('enhanced...')
+//     let tfjs_input = new Float32Array(global_buffer);
+//     let tfjs_output = await convert.inference(tfjs_input);
     
-    test = tfjs_output; // for debugging
+//     test = tfjs_output; // for debugging
 
-    audioCtx = new AudioContext({sampleRate: 16000});
-    audioCtx.resume();
+//     audioCtx = new AudioContext({sampleRate: 16000});
+//     audioCtx.resume();
 
-    // applied_result = new Uint16Array(tfjs_output.buffer);
+//     // applied_result = new Uint16Array(tfjs_output.buffer);
 
-    audioDest = audioCtx.createMediaStreamDestination();
-    // let buffer = audioCtx.createBuffer(1, applied_result.length, constraints.audio.sampleRate);
-    let buffer = audioCtx.createBuffer(1, tfjs_output.length, constraints.audio.sampleRate);
-    buffer.getChannelData(0).set(tfjs_output);
+//     audioDest = audioCtx.createMediaStreamDestination();
+//     // let buffer = audioCtx.createBuffer(1, applied_result.length, constraints.audio.sampleRate);
+//     let buffer = audioCtx.createBuffer(1, tfjs_output.length, constraints.audio.sampleRate);
+//     buffer.getChannelData(0).set(tfjs_output);
 
-    let source = audioCtx.createBufferSource();
-    source.buffer = buffer
-    source.connect(audioDest);
+//     let source = audioCtx.createBufferSource();
+//     source.buffer = buffer
+//     source.connect(audioDest);
     
-    mic = new MediaRecorder(audioDest.stream);
-    // console.log(chunks)
-    mic.ondataavailable = handleDataAvailable;
-    mic.onstop = handleStop;
+//     mic = new MediaRecorder(audioDest.stream);
+//     // console.log(chunks)
+//     mic.ondataavailable = handleDataAvailable;
+//     mic.onstop = handleStop;
 
-    mic.start();
-    source.start();
+//     mic.start();
+//     source.start();
 
-    source.onended = e => {
-        audioCtx.close().then(() => {
-            mic.stop();
-            audioCtx = null;
-            audioDest = null;
-            mic = null;
-        })
-    }
+//     source.onended = e => {
+//         audioCtx.close().then(() => {
+//             mic.stop();
+//             audioCtx = null;
+//             audioDest = null;
+//             mic = null;
+//         })
+//     }
 
-    // delete enhancement button
-    enhance.disabled = true;
-    console.log('complete enhancement')
-}
+//     // delete enhancement button
+//     enhance.disabled = true;
+//     console.log('complete enhancement')
+// }
 
-enhance.addEventListener('click', download);
+enhance.addEventListener('click', () => {
+    
+});
 
-function download(){
-    utils.download(url.innerText);
-}
 
 async function stopRec(){
     //Set AudioContext Disconnect & Close
@@ -236,6 +182,7 @@ async function stopRec(){
     play_pause.disabled = false;
     saveButton.disabled = false;
     enhance.disabled = false;
+
     // for debugging
     // await convert.inference(temp_buffer);
     // temp_buffer = [];
@@ -246,33 +193,31 @@ record_start_btn.addEventListener('click', startRec);
 record_end_btn.addEventListener('click', stopRec);
 
 // Add Recorded Audio File
-saveButton.addEventListener('click', addList);
-// Click List
-function addList(){
-    const newLi = document.createElement('li') // parents node
-    // Add file uploaded on player to the list
-    const newAudio = document.createElement('span')
-    newAudio.innerText = url.innerText //need to actual download
-    newAudio.setAttribute('hidden', true) // set invisible
+saveButton.addEventListener('click', download);
 
-    // Add in list child
-    newLi.appendChild(newAudio)
+async function download(){
+    let webm_file = url.innerText;
+    let fileName = utils.download(webm_file);
+    addList(fileName);
+}
 
-    const date = new Date()
-    const name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds()
-    const newName = document.createElement('span')
-    newName.innerText = name
-    newName.addEventListener('click', function(e){
-        const target = e.target
-        const parent = target.parentElement
-        const target_audio = parent.children[0]
-        window.waveVisualize(target_audio.innerText)
-    })
+let addList = (fileName) => {
+    // parentElement
+    let listDiv = document.getElementById('list');
 
-    // Add in list child name
-    newLi.appendChild(newName)
-    newLi.setAttribute('class', 'list_child')
+    // to upload setting name
+    let displayName = fileName.split('/')[1];
 
-    const ul = document.getElementById('list')
-    ul.appendChild(newLi)
+    // childElement setting
+    let liElement = document.createElement('li');
+    let spanElement = document.createElement('span');
+    spanElement.innerText = displayName;
+    spanElement.addEventListener('click', (e) => {
+        let target = e.target;
+        // console.log(target) == <span>fileName</span>
+        // console.log(target.tagName);
+        if(target.tagName === "SPAN") waveVisualize(fileName);
+    });
+    liElement.appendChild(spanElement);
+    listDiv.appendChild(liElement);
 }
