@@ -1,3 +1,6 @@
+const { MediaRecorder, register } = require('extendable-media-recorder');
+const connect = require('extendable-media-recorder-wav-encoder');
+
 // Audio Player
 const play_btn = document.getElementById('play')
 // Play/Pause Button
@@ -94,13 +97,15 @@ const mimeType = 'audio/webm;codecs=opus'
 //     );
 // }
 
-function startRec() {
+async function startRec() {
     record_start_btn.disabled = true;
     global_buffer = [];
     console.log("recording started...");
 
     audioCtx = new AudioContext({ sampleRate: 16000 });
     audioDest = audioCtx.createMediaStreamDestination();
+
+    await register(await connect());
 
     navigator.mediaDevices.getUserMedia(constraints).then(async (stream) => {
         audioCtx.resume();
