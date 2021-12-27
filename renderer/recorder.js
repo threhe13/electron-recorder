@@ -1,5 +1,5 @@
-const { MediaRecorder, register } = require('extendable-media-recorder');
-const connect = require('extendable-media-recorder-wav-encoder');
+// const { MediaRecorder, register } = require('extendable-media-recorder');
+// const connect = require('extendable-media-recorder-wav-encoder');
 
 // Audio Player
 const play_btn = document.getElementById('play')
@@ -105,7 +105,7 @@ async function startRec() {
     audioCtx = new AudioContext({ sampleRate: 16000 });
     audioDest = audioCtx.createMediaStreamDestination();
 
-    await register(await connect());
+    // await register(await connect());
 
     navigator.mediaDevices.getUserMedia(constraints).then(async (stream) => {
         audioCtx.resume();
@@ -138,7 +138,7 @@ async function startRec() {
             streamNode.connect(processor)
             
             mic = new MediaRecorder(audioDest.stream);
-            console.log(MediaRecorder.isTypeSupported("audio/wav;codes=MS_PCM"));
+            // console.log(MediaRecorder.isTypeSupported("audio/wav;codes=MS_PCM"));
             // console.log(audioDest.stream)
             mic.ondataavailable = handleDataAvailable;
             mic.onstop = handleStop;
@@ -186,7 +186,7 @@ async function enhancement(){
     source.connect(audioDest);
     
     mic = new MediaRecorder(audioDest.stream);
-    console.log(chunks)
+    // console.log(chunks)
     mic.ondataavailable = handleDataAvailable;
     mic.onstop = handleStop;
 
@@ -207,7 +207,11 @@ async function enhancement(){
     console.log('complete enhancement')
 }
 
-enhance.addEventListener('click', enhancement);
+enhance.addEventListener('click', download);
+
+function download(){
+    utils.download(url.innerText);
+}
 
 async function stopRec(){
     //Set AudioContext Disconnect & Close

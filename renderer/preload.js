@@ -111,10 +111,12 @@ contextBridge.exposeInMainWorld(
 contextBridge.exposeInMainWorld(
     'utils',
     {
-        download : async (blob, file_name) => {
+        download : async (blob) => {
             let aElement = document.createElement("a");
             aElement.href = blob;
-            aElement.download = file_name;
+            const date = new Date()
+            const name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds()
+            aElement.download = name + ".webm";
             aElement.click();
         }
     }

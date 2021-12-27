@@ -6,3 +6,6 @@ inference/
 # File #
 .renderer/renderer.js
 .DS_Store
+.package-lock.json
+.package.json
+.yarn.lock

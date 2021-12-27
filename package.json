@@ -12,12 +12,14 @@
     "start": "electron ."
   },
   "devDependencies": {
-    "electron": "^15.3.0"
+    "electron": "^15.3.4"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^3.11.0",
     "electron-builder": "^22.13.1",
     "electron-is-dev": "^2.0.0",
+    "extendable-media-recorder": "^6.5.14",
+    "extendable-media-recorder-wav-encoder": "^7.0.64",
     "wavesurfer.js": "^5.2.0"
   }
 }
