@@ -131,6 +131,7 @@ contextBridge.exposeInMainWorld(
                         console.log("error:", err);
                         return;
                     }
+                    return file_name;
                 });
             };
             reader.readAsArrayBuffer(blob);
@@ -145,10 +146,12 @@ contextBridge.exposeInMainWorld(
             const listDiv = document.getElementById('list');
             let path = "storage/";
             let files;
-        
+
+            // Read files in "storage" folder
             listDiv.innerHTML = "";
             fs.readdir(path, (err, fileList) => {
                 if(err) console.log("error:", err);
+                // Set return value
                 files = fileList;
         
                 fileList = fileList.filter(item => !(/(^|\/)\.[^\/\/.]/g.test(item))); // ignore hidden junk file
@@ -159,13 +162,9 @@ contextBridge.exposeInMainWorld(
 
                     spanElement.innerText = element;
                     liElement.appendChild(spanElement);
-                    // liElement.addEventListener('click', () => {
-                    //     waveVisualize(path+element);
-                    // })
                     listDiv.appendChild(liElement);
                 });
             });
-
             return files;
         }
     }

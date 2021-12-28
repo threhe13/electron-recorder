@@ -8,11 +8,12 @@ function createWindow(){
     win = new BrowserWindow(
         {
             width: 400,
-            height: 600,
+            height: 500,
             resizable: false,
             disableHtmlFullscreenWindowResize: true,
             webPreferences: {
-                // nodeIntegration: true, //a security risk only when you're executing some untrusted remote code on your application.  
+                //a security risk only when you're executing some untrusted remote code on your application.  
+                // nodeIntegration: true, 
                 // contextIsolation: false,
                 preload: path.join(__dirname, 'preload.js'),
             },
@@ -26,6 +27,9 @@ function createWindow(){
     if (isDev) {
         win.webContents.openDevTools()
     }
+
+
+
     // event when window closed
     win.on('closed', () => {
         win = null

@@ -195,14 +195,32 @@ saveButton.addEventListener('click', download);
 
 async function download(){
     let path = "storage/";
+
+    // if path is not exist, then create folder
     utils.mkdir(path);
+
+    // Download function
     let webm_file = global_buffer;
-    await utils.download(webm_file); //fileName == storage/[fileName]
-    utils.loadList();
+    let fileName = await utils.download(webm_file); //fileName == storage/[fileName]
+    console.log(fileName);
+
+    // Add file at list
+    let files = utils.loadList();
+    console.log(files);
 }
 
-function aDownload(){
-    let aElement = document.createElement('a');
+function aDownload(blob){
+    // Download Setting
+    let aElement = document.createElement("a");
+    aElement.href = blob;
+
+    // Naming part
+    const date = new Date()
+    const name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds()
+    
+    // Donwload function
+    aElement.download = name + ".webm";
+    aElement.click();
 }
 
 let addList = (fileName) => {
