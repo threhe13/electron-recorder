@@ -100,13 +100,9 @@ contextBridge.exposeInMainWorld(
             })
         },
         
-        inference : async (webm_file) => {
+        inference : async (webmFile, savedName) => {
             console.log("python script started...");
-            let enhanced_wav = child("python", ["inference/main.py", webm_file, "test.wav"]);
-            // enhanced_wav.stdout.on('data', (data) => {
-            //     console.log("python scirpt ended...");
-            //     return data;
-            // })
+            let enhanced_wav = child("python", ["inference/main.py", webmFile, savedName]);
             return enhanced_wav;
         }
     }
@@ -115,26 +111,39 @@ contextBridge.exposeInMainWorld(
 contextBridge.exposeInMainWorld(
     'utils',
     {
-        download : (blob) => {
+        download : async (blob, inputName=null) => {
             //Setting file name using Date
             let path = "storage/";
-            let date = new Date();
-            let name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds();
-            let file_name = path+name+".webm";
+
+            // Setting Name saved file
+            let fileName;
+            let type = ".webm";
+            
+            if (inputName == null){
+                let date = new Date();
+                let name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds();
+                fileName = path+name;
+            }
+            else fileName = path+inputName;
 
             // Append File in Directory
             let reader = new FileReader();
             reader.onload = () => {
-                let buffer = new Buffer(reader.result);
-                fs.writeFile(file_name, buffer, (err, result) => {
+                let buffer = Buffer.from(reader.result);
+                // Save webm file in storage folder
+                fs.writeFile(fileName+type, buffer, (err, result) => {
                     if(err) { 
                         console.log("error:", err);
-                        return;
+                        return; // if occurs error, stop and return
                     }
-                    return file_name;
+                    return fileName+type
                 });
             };
             reader.readAsArrayBuffer(blob);
+
+            // Run enhancement external scriopt
+            let enhanced_wav = child("python", ["inference/main.py", fileName+type, fileName+".wav"])
+            return enhanced_wav;
         },
 
         mkdir : (dirPath) => {

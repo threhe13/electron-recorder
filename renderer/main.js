@@ -28,7 +28,9 @@ function createWindow(){
         win.webContents.openDevTools()
     }
 
-
+    // Download Option
+    // ipcMain.on('download', (event, audio) => {
+    // })
 
     // event when window closed
     win.on('closed', () => {
@@ -38,7 +40,7 @@ function createWindow(){
     // Permission to Access Microphone
     // console.log(systemPreferences.getMediaAccessStatus('microphone')) // not determined -> NSMicrophone.. plist..
     const status = systemPreferences.getMediaAccessStatus('microphone')
-    console.log(status)
+    console.log(status) 
     const access = systemPreferences.askForMediaAccess('microphone')
     console.log(access)
 }

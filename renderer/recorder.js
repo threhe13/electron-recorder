@@ -150,11 +150,12 @@ function handleStop(){
 //     console.log('complete enhancement')
 // }
 
-let test_file;
-enhance.addEventListener('click', () => {
-    let webm_file = "storage/2021_11_27-18_2_19.webm";
-    test_file = python.inference(webm_file);
-});
+// Debugging Code
+// let test_file;
+// enhance.addEventListener('click', () => {
+//     let webm_file = "storage/2021_11_27-18_2_19.webm";
+//     test_file = python.inference(webm_file);
+// });
 
 
 async function stopRec(){
@@ -204,9 +205,9 @@ async function download(){
     let fileName = await utils.download(webm_file); //fileName == storage/[fileName]
     console.log(fileName);
 
-    // Add file at list
-    let files = utils.loadList();
-    console.log(files);
+    // Add file at list => move to list page
+    // let files = utils.loadList();
+    // console.log(files);
 }
 
 function aDownload(blob){
