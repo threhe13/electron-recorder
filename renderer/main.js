@@ -1,7 +1,6 @@
 const {app, BrowserWindow, systemPreferences, ipcMain} = require('electron')
 const isDev = require('electron-is-dev')
-const path = require('path')
-// const fs = require('fs')
+const path = require('path'); 
 
 let win;
 function createWindow(){
@@ -46,7 +45,9 @@ app.whenReady().then(() => {
 })
 
 app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
 })
 
 // On mac, command+Q

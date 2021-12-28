@@ -49,7 +49,6 @@ const mimeType = 'audio/webm;codecs=opus'
 
 async function startRec() {
     record_start_btn.disabled = true;
-    global_buffer = [];
     console.log("recording started...");
 
     audioCtx = new AudioContext({ sampleRate: 16000 });
@@ -73,9 +72,6 @@ async function startRec() {
             );
             processor.port.onmessage = function (e) {
                 // console.log(e.data.buffer);
-
-                global_buffer.push(...e.data.buffer);
-
                 let floats = new Float32Array(e.data.buffer);
                 let source = audioCtx.createBufferSource();
                 let buffer = audioCtx.createBuffer(1, floats.length, constraints.audio.sampleRate)
@@ -105,7 +101,7 @@ function handleDataAvailable(e){
 function handleStop(){
     let blob = new Blob(chunks, {"type": mimeType});
     let audioURL = URL.createObjectURL(blob);
-    url.innerHTML = audioURL;
+    global_buffer = blob;
     waveVisualize(audioURL);
     chunks.pop(); // chunks = [Blob]
 }
@@ -154,9 +150,10 @@ function handleStop(){
 //     console.log('complete enhancement')
 // }
 
+let test_file;
 enhance.addEventListener('click', () => {
-    let webm_file = "storage\\2021_11_27-17_46_48.webm";
-    python.inference(webm_file);
+    let webm_file = "storage/2021_11_27-18_2_19.webm";
+    test_file = python.inference(webm_file);
 });
 
 
@@ -199,18 +196,22 @@ saveButton.addEventListener('click', download);
 async function download(){
     let path = "storage/";
     utils.mkdir(path);
+    let webm_file = global_buffer;
+    await utils.download(webm_file); //fileName == storage/[fileName]
+    utils.loadList();
+}
 
-    let webm_file = url.innerText;
-    let fileName = utils.download(webm_file); //fileName == storage/[fileName]
-    addList(fileName);
+function aDownload(){
+    let aElement = document.createElement('a');
 }
 
 let addList = (fileName) => {
     // parentElement
     let listDiv = document.getElementById('list');
+    // console.log(fileName);
 
     // to upload setting name
-    let displayName = fileName.split('/')[1];
+    // let displayName = fileName.split('/')[1];
 
     // childElement setting
     let liElement = document.createElement('li');

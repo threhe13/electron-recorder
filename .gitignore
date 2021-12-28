@@ -2,6 +2,7 @@
 node_modules/
 test/
 inference/
+storage/
 
 # File #
 .renderer/renderer.js

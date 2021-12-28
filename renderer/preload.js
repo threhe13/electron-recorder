@@ -3,7 +3,7 @@ const fs = require('fs');
 const WaveSurfer = require('wavesurfer.js');
 const { convertTensor, inference } = require('./model');
 const tf = require('@tensorflow/tfjs');
-const child = require('child_process').spawn;
+const child = require('child_process').spawnSync;
 
 
 // Notification Function
@@ -101,10 +101,13 @@ contextBridge.exposeInMainWorld(
         },
         
         inference : async (webm_file) => {
-            let enhanced_wav = child("python", ["inference/model.py", webm_file]);
-            enhanced_wav.stdout.on('data', (data) => {
-                return data;
-            })
+            console.log("python script started...");
+            let enhanced_wav = child("python", ["inference/main.py", webm_file, "test.wav"]);
+            // enhanced_wav.stdout.on('data', (data) => {
+            //     console.log("python scirpt ended...");
+            //     return data;
+            // })
+            return enhanced_wav;
         }
     }
 )
@@ -120,11 +123,17 @@ contextBridge.exposeInMainWorld(
             let file_name = path+name+".webm";
 
             // Append File in Directory
-            fs.writeFile(file_name, blob, (err, result) => {
-                if(err) console.log("error:", err);
-            });
-
-            return file_name;
+            let reader = new FileReader();
+            reader.onload = () => {
+                let buffer = new Buffer(reader.result);
+                fs.writeFile(file_name, buffer, (err, result) => {
+                    if(err) { 
+                        console.log("error:", err);
+                        return;
+                    }
+                });
+            };
+            reader.readAsArrayBuffer(blob);
         },
 
         mkdir : (dirPath) => {
