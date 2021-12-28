@@ -3,7 +3,7 @@ const fs = require('fs');
 const WaveSurfer = require('wavesurfer.js');
 const { convertTensor, inference } = require('./model');
 const tf = require('@tensorflow/tfjs');
-const child = require('child_process').spawnSync;
+const { spawn } = require('child_process');
 
 
 // Notification Function
@@ -94,16 +94,19 @@ contextBridge.exposeInMainWorld(
     {
         // Complete Test 
         test : async (comment) => {
-            let create_log = child("python", ["inference/test.py", comment]);
+            let create_log = spawn("python", ["inference/test.py", comment]);
             create_log.stdout.on('data', (data) => {
                 console.log(data);
             })
         },
         
         inference : async (webmFile, savedName) => {
-            console.log("python script started...");
-            let enhanced_wav = child("python", ["inference/main.py", webmFile, savedName]);
-            return enhanced_wav;
+            // console.log("python script started...");
+            let enhanced_wav = spawn("python", ["inference/main.py", webmFile, savedName]);
+            enhanced_wav.stdout.on('data', (data) => {
+                //data //it is buffer(ArrayBuffer) 
+                return savedName;
+            })
         }
     }
 )
@@ -122,28 +125,25 @@ contextBridge.exposeInMainWorld(
             if (inputName == null){
                 let date = new Date();
                 let name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds();
-                fileName = path+name;
+                fileName = name;
             }
-            else fileName = path+inputName;
+            else fileName = inputName;
 
             // Append File in Directory
             let reader = new FileReader();
             reader.onload = () => {
                 let buffer = Buffer.from(reader.result);
                 // Save webm file in storage folder
-                fs.writeFile(fileName+type, buffer, (err, result) => {
+                fs.writeFile(path+fileName+type, buffer, (err, result) => {
                     if(err) { 
                         console.log("error:", err);
                         return; // if occurs error, stop and return
                     }
-                    return fileName+type
                 });
             };
             reader.readAsArrayBuffer(blob);
 
-            // Run enhancement external scriopt
-            let enhanced_wav = child("python", ["inference/main.py", fileName+type, fileName+".wav"])
-            return enhanced_wav;
+            return fileName;
         },
 
         mkdir : (dirPath) => {

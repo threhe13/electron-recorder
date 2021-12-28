@@ -5,7 +5,7 @@ const play_pause = document.getElementById('PlayPause')
 // Record Button
 const record_start_btn = document.getElementById('record-status-start')
 const record_end_btn = document.getElementById('record-status-stop')
-const enhance = document.getElementById('enhance')
+// const enhance = document.getElementById('enhance')
 // Media Url
 const url = document.getElementById('media')
 // WaveForm
@@ -180,7 +180,6 @@ async function stopRec(){
 
     play_pause.disabled = false;
     saveButton.disabled = false;
-    enhance.disabled = false;
 
     // for debugging
     // await convert.inference(temp_buffer);
@@ -196,6 +195,8 @@ saveButton.addEventListener('click', download);
 
 async function download(){
     let path = "storage/";
+    let type = ".webm";
+    let wantedType = ".wav";
 
     // if path is not exist, then create folder
     utils.mkdir(path);
@@ -206,8 +207,8 @@ async function download(){
     console.log(fileName);
 
     // Add file at list => move to list page
-    // let files = utils.loadList();
-    // console.log(files);
+    let files = python.inference(path+fileName+type, fileName+wantedType);
+    console.log(files); // file name saved in directory that is type wav
 }
 
 function aDownload(blob){
