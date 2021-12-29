@@ -16,6 +16,25 @@ contextBridge.exposeInMainWorld(
     }
 )
 
+contextBridge.exposeInMainWorld(
+    "api", {
+        send: (channel, data) => {
+            // whitelist channels
+            let validChannels = ["eletron-modal"];
+            if (validChannels.includes(channel)) {
+                ipcRenderer.send(channel, data);
+            }
+        },
+        receive: (channel, func) => {
+            let validChannels = ["electron-modal-value-reply"];
+            if (validChannels.includes(channel)) {
+                // Deliberately strip event as it includes `sender` 
+                ipcRenderer.on(channel, (event, ...args) => func(...args));
+            }
+        }
+    }
+);
+
 // Audio Visualization
 contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     // Delete previous waveform
@@ -114,13 +133,21 @@ contextBridge.exposeInMainWorld(
 contextBridge.exposeInMainWorld(
     'utils',
     {
+        setName : async () => {
+            ipcRenderer.sendSync('electron-modal');
+        },
+
         download : async (blob, inputName=null) => {
             //Setting file name using Date
             let path = "storage/";
 
             // Setting Name saved file
+            let fileName;
             let type = ".webm";
-            let fileName = await ipcRenderer.sendSync('electron-modal');
+            // ipcRenderer.sendSync('electron-modal');
+            // ipcRenderer.on('electron-modal-value-reply', (e, name) => {
+                
+            // })
             
             if (inputName == null){
                 let date = new Date();

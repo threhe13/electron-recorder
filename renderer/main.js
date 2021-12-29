@@ -34,18 +34,15 @@ function createWindow(){
     })
 
     //dialog setting
-    ipcMain.on('electron-modal', (event) => {
-        let name;
-
+    ipcMain.on('electron-modal', () => {
         //Modal Window Setting
         let modalWindow = new BrowserWindow({
             parent: win, // set child window
-            x: 100,
-            y: 100,
             width: 300,
             height: 100,
             resizable: false,
-            modal: true // when open child window, set parents window to untouchable
+            modal: true, // when open child window, set parents window to untouchable
+            titleBarStyle: 'hidden',
         });
         //HTML File
         const modalHtml = path.join(__dirname, '../static/modal.html');
@@ -53,10 +50,13 @@ function createWindow(){
 
         modalWindow.show();
         //Modal Closed Option
-        ipcMain.on('electron-modal-value', (event, value) => {
-            name = value;
+        modalWindow.on('close', () => {
             modalWindow = null;
-            event.reply(name);
+        })
+
+        ipcMain.on('electron-modal-value', (e, value) => {
+            modalWindow.webContents.send('electron-modal-value-reply', value);
+            modalWindow.close();
         })
     })
 

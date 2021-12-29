@@ -1,17 +1,19 @@
+const { AppInfo } = require("electron-builder");
+
 // Audio Player
-const play_btn = document.getElementById('play')
+const play_btn = document.getElementById('play');
 // Play/Pause Button
-const play_pause = document.getElementById('PlayPause')
+const play_pause = document.getElementById('PlayPause');
 // Record Button
-const record_start_btn = document.getElementById('record-status-start')
-const record_end_btn = document.getElementById('record-status-stop')
+const record_start_btn = document.getElementById('record-status-start');
+const record_end_btn = document.getElementById('record-status-stop');
 // const enhance = document.getElementById('enhance')
 // Media Url
-const url = document.getElementById('media')
+const url = document.getElementById('media');
 // WaveForm
-const waveform = document.getElementById('waveform')
+const waveform = document.getElementById('waveform');
 // Save Button
-const saveButton = document.getElementById('save')
+const saveButton = document.getElementById('save');
 
 let mediaStream,
     streamNode,
@@ -33,7 +35,7 @@ const constraints = {
         sampleRate : 16000,
     },
     video: false,
-} // Receive only audio when running stream
+}; // Receive only audio when running stream
 
 const process_parameters = {
     processorOptions: {
@@ -45,7 +47,7 @@ const process_parameters = {
     channelCount: 1,
 };
 
-const mimeType = 'audio/webm;codecs=opus'
+const mimeType = 'audio/webm;codecs=opus';
 
 async function startRec() {
     record_start_btn.disabled = true;
@@ -74,14 +76,14 @@ async function startRec() {
                 // console.log(e.data.buffer);
                 let floats = new Float32Array(e.data.buffer);
                 let source = audioCtx.createBufferSource();
-                let buffer = audioCtx.createBuffer(1, floats.length, constraints.audio.sampleRate)
+                let buffer = audioCtx.createBuffer(1, floats.length, constraints.audio.sampleRate);
 
                 buffer.getChannelData(0).set(floats);
                 source.buffer = buffer;
                 source.connect(audioDest);
                 source.start();
             };
-            streamNode.connect(processor)
+            streamNode.connect(processor);
             
             mic = new MediaRecorder(audioDest.stream);
             // console.log(MediaRecorder.isTypeSupported("audio/wav;codes=MS_PCM"));
@@ -191,7 +193,25 @@ record_start_btn.addEventListener('click', startRec);
 record_end_btn.addEventListener('click', stopRec);
 
 // Add Recorded Audio File
-saveButton.addEventListener('click', download);
+saveButton.addEventListener('click', setFileName);
+
+let setFileName = () => {
+    api.send('electron-modal');
+}
+
+api.receive('electron-modal-value', (name) => {
+    let path = "storage/";
+    let type = ".webm";
+    let wantedType = ".wav";
+
+    // if path is not exist, then create folder
+    utils.mkdir(path);
+
+    // Download function
+    let webm_file = global_buffer;
+    let fileName = await utils.download(webm_file, name); //fileName == storage/[fileName]
+    console.log(fileName);
+})
 
 async function download(){
     let path = "storage/";
@@ -206,9 +226,9 @@ async function download(){
     let fileName = await utils.download(webm_file); //fileName == storage/[fileName]
     console.log(fileName);
 
-    // Add file at list => move to list page
-    let files = python.inference(path+fileName+type, fileName+wantedType);
-    console.log(files); // file name saved in directory that is type wav
+    // Add file at list => move to list page -> preload
+    // let files = python.inference(path+fileName+type, fileName+wantedType);
+    // console.log(files); // file name saved in directory that is type wav
 }
 
 function aDownload(blob){
