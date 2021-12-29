@@ -1,4 +1,4 @@
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 const fs = require('fs');
 const WaveSurfer = require('wavesurfer.js');
 const { convertTensor, inference } = require('./model');
@@ -8,11 +8,11 @@ const { spawn } = require('child_process');
 
 // Notification Function
 contextBridge.exposeInMainWorld(
-    'showNoti',
+    'functional',
     {
         create: (contents) => {
-            new Notification("Electron-Dev", { body: contents });
-        }
+            new Notification("Recorder", { body: contents });
+        },
     }
 )
 
@@ -119,8 +119,8 @@ contextBridge.exposeInMainWorld(
             let path = "storage/";
 
             // Setting Name saved file
-            let fileName;
             let type = ".webm";
+            let fileName = await ipcRenderer.sendSync('electron-modal');
             
             if (inputName == null){
                 let date = new Date();
@@ -163,7 +163,7 @@ contextBridge.exposeInMainWorld(
                 // Set return value
                 files = fileList;
         
-                fileList = fileList.filter(item => !(/(^|\/)\.[^\/\/.]/g.test(item))); // ignore hidden junk file
+                fileList = fileList.filter(item => !(/(^|\/)\.[^\/\/.]/g.test(item))); // ignore hidden junk file ex. .DS_Store
                 fileList.forEach(element => {
                     // console.log(element);
                     let liElement = document.createElement('li');

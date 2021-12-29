@@ -1,4 +1,4 @@
-const {app, BrowserWindow, systemPreferences, ipcMain} = require('electron')
+const {app, BrowserWindow, systemPreferences, ipcMain, ipcRenderer} = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path'); 
 
@@ -28,13 +28,36 @@ function createWindow(){
         win.webContents.openDevTools()
     }
 
-    // Download Option
-    // ipcMain.on('download', (event, audio) => {
-    // })
-
     // event when window closed
     win.on('closed', () => {
         win = null
+    })
+
+    //dialog setting
+    ipcMain.on('electron-modal', (event) => {
+        let name;
+
+        //Modal Window Setting
+        let modalWindow = new BrowserWindow({
+            parent: win, // set child window
+            x: 100,
+            y: 100,
+            width: 300,
+            height: 100,
+            resizable: false,
+            modal: true // when open child window, set parents window to untouchable
+        });
+        //HTML File
+        const modalHtml = path.join(__dirname, '../static/modal.html');
+        modalWindow.loadFile(modalHtml);
+
+        modalWindow.show();
+        //Modal Closed Option
+        ipcMain.on('electron-modal-value', (event, value) => {
+            name = value;
+            modalWindow = null;
+            event.reply(name);
+        })
     })
 
     // Permission to Access Microphone
