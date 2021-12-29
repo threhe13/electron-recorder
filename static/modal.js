@@ -20,7 +20,3 @@ let Cancel = () => {
 
 submitBtn.addEventListener('click', Submit);
 cancelBtn.addEventListener('click', Cancel);
-
-ipcRenderer.on('electron-modal-value-reply', (event, arg) => {
-    
-})

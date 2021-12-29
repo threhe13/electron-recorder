@@ -1,5 +1,3 @@
-const { AppInfo } = require("electron-builder");
-
 // Audio Player
 const play_btn = document.getElementById('play');
 // Play/Pause Button
@@ -192,14 +190,15 @@ async function stopRec(){
 record_start_btn.addEventListener('click', startRec);
 record_end_btn.addEventListener('click', stopRec);
 
-// Add Recorded Audio File
-saveButton.addEventListener('click', setFileName);
 
 let setFileName = () => {
     api.send('electron-modal');
 }
 
-api.receive('electron-modal-value', (name) => {
+// Add Recorded Audio File
+saveButton.addEventListener('click', setFileName);
+
+api.receive('electron-modal-value', async (name) => {
     let path = "storage/";
     let type = ".webm";
     let wantedType = ".wav";
