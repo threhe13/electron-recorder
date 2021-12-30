@@ -15,13 +15,13 @@ function createWindow(){
                 //a security risk only when you're executing some untrusted remote code on your application.  
                 // nodeIntegration: true, 
                 // contextIsolation: false,
-                preload: path.join(__dirname, 'preload.js'),
+                preload: path.join(__dirname, 'renderer/preload.js'),
             },
         }
     )
     // load main html
     // Delete win.loadURL function for security
-    win.loadFile(path.join(__dirname, '../index.html'))
+    win.loadFile(path.join(__dirname, 'index.html'))
     
     // open DevTool option
     if (isDev) {
@@ -34,7 +34,7 @@ function createWindow(){
     })
 
     //dialog setting
-    ipcMain.on('electron-modal', () => {
+    ipcMain.on('electron-modal', (event) => {
         //Modal Window Setting
         let modalWindow = new BrowserWindow({
             parent: win, // set child window
@@ -43,9 +43,12 @@ function createWindow(){
             resizable: false,
             modal: true, // when open child window, set parents window to untouchable
             titleBarStyle: 'hidden',
+            webPreferences: {
+                preload: path.join(__dirname, 'renderer/preload.js')
+            }
         });
         //HTML File
-        const modalHtml = path.join(__dirname, '../static/modal.html');
+        const modalHtml = path.join(__dirname, 'renderer/pages/modal.html');
         modalWindow.loadFile(modalHtml);
 
         modalWindow.show();
@@ -55,8 +58,14 @@ function createWindow(){
         })
 
         ipcMain.on('electron-modal-value', (e, value) => {
-            modalWindow.webContents.send('electron-modal-value-reply', value);
-            modalWindow.close();
+            if (value == null){
+                modalWindow.close();
+            }
+            else{
+                console.log("send?");
+                modalWindow.webContents.send('electron-modal-value-reply', value);
+                modalWindow.close();
+            }
         })
     })
 

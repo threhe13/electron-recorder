@@ -2,7 +2,7 @@
   "name": "electron-dev",
   "version": "0.0.1",
   "description": "Develop desktop app including speech enhnacement",
-  "main": "./renderer/main.js",
+  "main": "main.js",
   "author": "SungHyun Kim",
   "license": "MIT",
   "files": [

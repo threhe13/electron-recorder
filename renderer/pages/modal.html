@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <input type="text" id="name">
+    <button type="submit" id="cancel">Cancel</button>
+    <button type="submit" id="submit">Submit</button>
+</body>
+<script>
+    const cancelBtn = document.getElementById('cancel');
+    const submitBtn = document.getElementById('submit');
+    function Cancel() {
+        api.send("electron-modal-value", null);
+    }
+    function Submit(){
+        let name = document.getElementById('name').value.toString();
+        api.send("electron-modal-value", name);
+    }
+    cancelBtn.addEventListener('click', Cancel);
+    submitBtn.addEventListener('click', Submit);
+</script>
+</html>

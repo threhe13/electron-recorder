@@ -191,14 +191,16 @@ record_start_btn.addEventListener('click', startRec);
 record_end_btn.addEventListener('click', stopRec);
 
 
-let setFileName = () => {
+function setFileName() {
+    console.log("send api");
     api.send('electron-modal');
 }
 
 // Add Recorded Audio File
 saveButton.addEventListener('click', setFileName);
 
-api.receive('electron-modal-value', async (name) => {
+api.receive('electron-modal-value-reply', async (event, name) => {
+    console.log("receive reply");
     let path = "storage/";
     let type = ".webm";
     let wantedType = ".wav";

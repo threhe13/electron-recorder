@@ -1,8 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const fs = require('fs');
 const WaveSurfer = require('wavesurfer.js');
-const { convertTensor, inference } = require('./model');
-const tf = require('@tensorflow/tfjs');
 const { spawn } = require('child_process');
 
 
@@ -18,18 +16,20 @@ contextBridge.exposeInMainWorld(
 
 contextBridge.exposeInMainWorld(
     "api", {
-        send: (channel, data) => {
+        send: (channel, data=null) => {
             // whitelist channels
-            let validChannels = ["eletron-modal"];
+            let validChannels = ["electron-modal", "electron-modal-value"];
             if (validChannels.includes(channel)) {
+                console.log("send pass");
                 ipcRenderer.send(channel, data);
             }
         },
-        receive: (channel, func) => {
+        receive: (channel, data) => {
+            console.log('receive api');
             let validChannels = ["electron-modal-value-reply"];
             if (validChannels.includes(channel)) {
                 // Deliberately strip event as it includes `sender` 
-                ipcRenderer.on(channel, (event, ...args) => func(...args));
+                ipcRenderer.on(channel, data);
             }
         }
     }
@@ -90,23 +90,23 @@ contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
 })
 
 // Set convert tensor and inference function
-contextBridge.exposeInMainWorld(
-    'convert', 
-    {
-        tensor : async (input) => {
-            let tensor = await convertTensor(input);
-            return tensor;
-        },
+// contextBridge.exposeInMainWorld(
+//     'convert', 
+//     {
+//         tensor : async (input) => {
+//             let tensor = await convertTensor(input);
+//             return tensor;
+//         },
 
-        inference : async (input) => {
-            let output;
-            let tfjs_result = await inference(input);
-            // console.log(tfjs_result.print());
-            output = tfjs_result.dataSync();
-            return output
-        }
-    }
-)
+//         inference : async (input) => {
+//             let output;
+//             let tfjs_result = await inference(input);
+//             // console.log(tfjs_result.print());
+//             output = tfjs_result.dataSync();
+//             return output
+//         }
+//     }
+// )
 
 contextBridge.exposeInMainWorld(
     'python',
