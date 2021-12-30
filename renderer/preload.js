@@ -123,6 +123,14 @@ contextBridge.exposeInMainWorld(
     {
         open : () => {
             ipcRenderer.send('open-list');
+        },
+
+        load : () => {
+
+        },
+
+        wave : () => {
+
         }
     }
 )
@@ -169,30 +177,37 @@ contextBridge.exposeInMainWorld(
             if(!isExist) fs.mkdirSync(dirPath, {recursive: true});
         },
 
-        loadList : () => {
-            const listElement = document.getElementById('list');
+        loadList : (listElement) => {
             let path = "storage/";
-            let files;
+            // console.log(path);
+            const downArrowPath = "../../assets/images/down-arrow.png"
 
             // Read files in "storage" folder
             // listElement.innerHTML = "";
             fs.readdir(path, (err, fileList) => {
                 if(err) console.log("error:", err);
                 // Set return value
-                files = fileList;
-        
                 fileList = fileList.filter(item => !(/(^|\/)\.[^\/\/.]/g.test(item))); // ignore hidden junk file ex. .DS_Store
                 fileList.forEach(element => {
-                    // console.log(element);
                     let liElement = document.createElement('li');
-                    let spanElement = document.createElement('span');
 
-                    spanElement.innerText = element;
-                    liElement.appendChild(spanElement);
+                    let spanElement = document.createElement('span');
+                    spanElement.innerText = element.toString();
+                    
+                    let imgElement = document.createElement('img');
+                    imgElement.setAttribute('src', downArrowPath);
+
+                    //div
+                    let divElement = document.createElement('div');
+                    divElement.classList.add('audio');
+
+                    liElement.classList.add('childList');
+                    liElement.appendChild(spanElement)
+                    liElement.appendChild(imgElement)
+                    liElement.appendChild(divElement);
                     listElement.appendChild(liElement);
                 });
             });
-            return files;
         }
     }
 )
