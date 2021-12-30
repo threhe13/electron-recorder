@@ -12,6 +12,8 @@ const url = document.getElementById('media');
 const waveform = document.getElementById('waveform');
 // Save Button
 const saveButton = document.getElementById('save');
+// List Button
+const listButton = document.getElementById('openList');
 
 let mediaStream,
     streamNode,
@@ -252,3 +254,6 @@ let addList = (fileName) => {
     liElement.appendChild(spanElement);
     listDiv.appendChild(liElement);
 }
+
+// open list
+listButton.addEventListener('click', list.open);

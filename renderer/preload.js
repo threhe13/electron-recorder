@@ -119,6 +119,15 @@ contextBridge.exposeInMainWorld(
 )
 
 contextBridge.exposeInMainWorld(
+    'list',
+    {
+        open : () => {
+            ipcRenderer.send('open-list');
+        }
+    }
+)
+
+contextBridge.exposeInMainWorld(
     'utils',
     {
         download : async (blob) => {
@@ -161,12 +170,12 @@ contextBridge.exposeInMainWorld(
         },
 
         loadList : () => {
-            const listDiv = document.getElementById('list');
+            const listElement = document.getElementById('list');
             let path = "storage/";
             let files;
 
             // Read files in "storage" folder
-            listDiv.innerHTML = "";
+            // listElement.innerHTML = "";
             fs.readdir(path, (err, fileList) => {
                 if(err) console.log("error:", err);
                 // Set return value
@@ -180,7 +189,7 @@ contextBridge.exposeInMainWorld(
 
                     spanElement.innerText = element;
                     liElement.appendChild(spanElement);
-                    listDiv.appendChild(liElement);
+                    listElement.appendChild(liElement);
                 });
             });
             return files;

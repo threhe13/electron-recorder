@@ -1,5 +1,5 @@
 const {app, BrowserWindow, systemPreferences, ipcMain, webContents} = require('electron')
-const isDev = require('electron-is-dev')
+const isDev = require('electron-is-dev');
 const path = require('path'); 
 
 let win;
@@ -55,12 +55,11 @@ function createWindow(){
                 preload: path.join(__dirname, 'renderer/preload.js'),
             }
         });
-
+        //initial setting
         modalWindow.setMenu(null);
 		modalWindow.setMenuBarVisibility(false);
         //HTML File
-        const modalHtml = path.join(__dirname, 'renderer/pages/modal.html');
-        modalWindow.loadFile(modalHtml);
+        modalWindow.loadFile(path.join(__dirname, 'renderer/pages/modal.html'));
 
         modalWindow.on('ready-to-show', () => {
             modalWindow.show();
@@ -72,6 +71,27 @@ function createWindow(){
             modalWindow.close();
             event.returnValue = value;
         })
+    })
+
+    let fileList;
+    ipcMain.on('open-list', () => {
+        fileList = new BrowserWindow({
+            width: 400,
+            height: 500,
+            webPreferences: {
+                preload: path.join(__dirname, 'renderer/preload.js'),
+            },
+        });
+        //initial setting
+        fileList.setMenu(null);
+		fileList.setMenuBarVisibility(false);
+        fileList.loadFile(path.join(__dirname, 'renderer/pages/fileList.html'));
+
+        fileList.on('ready-to-show', () => {
+            fileList.show();
+        });
+        // Window Close Option
+        fileList.on('closed', () => { fileList = null; });
     })
 
     // Permission to Access Microphone
