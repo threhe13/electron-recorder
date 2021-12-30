@@ -36,13 +36,14 @@ function createWindow(){
     })
 
     //dialog setting
+    let modalWindow
     ipcMain.on('electron-modal', (event) => {
         //Modal Window Setting
-        let modalWindow = new BrowserWindow({
+        modalWindow = new BrowserWindow({
             parent: win, // set child window
             title: "Save file",
             width: 300,
-            height: 100,
+            height: 150,
             minimizable: false,
 			fullscreenable: false,
 			maximizable: false,
@@ -61,10 +62,13 @@ function createWindow(){
         const modalHtml = path.join(__dirname, 'renderer/pages/modal.html');
         modalWindow.loadFile(modalHtml);
 
-        modalWindow.show();
+        modalWindow.on('ready-to-show', () => {
+            modalWindow.show();
+        })
         //Modal Closed Option
         modalWindow.on('closed', () => { modalWindow = null; })
         ipcMain.on('electron-modal-value', (e, value) => {
+            // console.log(modalWindow); // for debugging
             modalWindow.close();
             event.returnValue = value;
         })

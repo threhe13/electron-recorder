@@ -4,21 +4,74 @@
     <meta charset="UTF-8">
 </head>
 <style>
-    #text {
-        font-size: 11px;
+    @media (prefers-color-scheme: dark) {
+        body { 
+            background: #2f3437; 
+            color: white; 
+        }
     }
+
+    @media (prefers-color-scheme: light) {
+        body { 
+            background: white; 
+            color: black; 
+        }
+    }
+
+    body {
+        text-align: center;
+    }
+
+    #text {
+        /* font-size: 11px; */
+    }
+
+    #name {
+
+    }
+
+    #form {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    #form > button {
+        right: 0px;
+        margin: 0.5em;
+    }
+
+    #form > button,
+    #form > input[type=text] {
+        border-radius: 2px;
+        border: 0px;
+        margin: .5em 0 0 .5em;
+        line-height: 1em;
+        padding: .5em;
+    }
+
+    #save {
+        background-color: #5085d4;
+        color: white;
+    }
+
+    #cancel {
+        background-color: #DDD;
+        color: black;
+    }
+
 </style>
 <body>
     <p id="text">Please input name of file to save</p>
-    <input type="text" id="name">
-    <div>
+    <input type="text" id="name" placeholder=".webm">
+    <div id="form">
         <button type="submit" id="cancel">Cancel</button>
-        <button type="submit" id="submit">Submit</button>
+        <button type="submit" id="save">Save</button>
     </div>
 </body>
 <script>
     const cancelBtn = document.getElementById('cancel');
-    const submitBtn = document.getElementById('submit');
+    const saveBtn = document.getElementById('save');
     function Cancel() {
         modal.send("electron-modal-value", null);
     }
@@ -27,6 +80,6 @@
         modal.send("electron-modal-value", name);
     }
     cancelBtn.addEventListener('click', Cancel);
-    submitBtn.addEventListener('click', Submit);
+    saveBtn.addEventListener('click', Submit);
 </script>
 </html>

@@ -212,7 +212,6 @@ async function download(){
     if (fileName == null){
         return;
     }
-
     // Add file at list => move to list page -> preload
     let files = python.inference(path+fileName+type, fileName+wantedType);
     console.log(files); // file name saved in directory that is type wav

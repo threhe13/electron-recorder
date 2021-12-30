@@ -135,7 +135,7 @@ contextBridge.exposeInMainWorld(
                 fileName = name;
             }
             else if (fileName == null){
-                return;
+                return null;
             }
 
             // Append File in Directory
