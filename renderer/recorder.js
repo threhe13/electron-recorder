@@ -192,28 +192,11 @@ record_end_btn.addEventListener('click', stopRec);
 
 
 function setFileName() {
-    console.log("send api");
-    api.send('electron-modal');
+    utils.setName();
 }
 
 // Add Recorded Audio File
-saveButton.addEventListener('click', setFileName);
-
-api.receive('electron-modal-value-reply', async (event, name) => {
-    console.log("receive reply");
-    let path = "storage/";
-    let type = ".webm";
-    let wantedType = ".wav";
-
-    // if path is not exist, then create folder
-    utils.mkdir(path);
-
-    // Download function
-    let webm_file = global_buffer;
-    let fileName = await utils.download(webm_file, name); //fileName == storage/[fileName]
-    console.log(fileName);
-})
-
+saveButton.addEventListener('click', download)
 async function download(){
     let path = "storage/";
     let type = ".webm";

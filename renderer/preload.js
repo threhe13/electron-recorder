@@ -14,27 +14,6 @@ contextBridge.exposeInMainWorld(
     }
 )
 
-contextBridge.exposeInMainWorld(
-    "api", {
-        send: (channel, data=null) => {
-            // whitelist channels
-            let validChannels = ["electron-modal", "electron-modal-value"];
-            if (validChannels.includes(channel)) {
-                console.log("send pass");
-                ipcRenderer.send(channel, data);
-            }
-        },
-        receive: (channel, data) => {
-            console.log('receive api');
-            let validChannels = ["electron-modal-value-reply"];
-            if (validChannels.includes(channel)) {
-                // Deliberately strip event as it includes `sender` 
-                ipcRenderer.on(channel, data);
-            }
-        }
-    }
-);
-
 // Audio Visualization
 contextBridge.exposeInMainWorld('waveVisualize', (wave) => {
     // Delete previous waveform
@@ -131,30 +110,34 @@ contextBridge.exposeInMainWorld(
 )
 
 contextBridge.exposeInMainWorld(
+    'modal',
+    {
+        send : (messeage, value) => {
+            ipcRenderer.sendSync(messeage, value);
+        }
+    }
+)
+
+contextBridge.exposeInMainWorld(
     'utils',
     {
-        setName : async () => {
-            ipcRenderer.sendSync('electron-modal');
-        },
-
-        download : async (blob, inputName=null) => {
+        download : async (blob) => {
             //Setting file name using Date
             let path = "storage/";
 
             // Setting Name saved file
-            let fileName;
+            let fileName = ipcRenderer.sendSync('electron-modal');
             let type = ".webm";
             // ipcRenderer.sendSync('electron-modal');
             // ipcRenderer.on('electron-modal-value-reply', (e, name) => {
                 
             // })
             
-            if (inputName == null){
+            if (fileName == null){
                 let date = new Date();
                 let name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds();
                 fileName = name;
             }
-            else fileName = inputName;
 
             // Append File in Directory
             let reader = new FileReader();

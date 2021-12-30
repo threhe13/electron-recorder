@@ -1,4 +1,4 @@
-const {app, BrowserWindow, systemPreferences, ipcMain, ipcRenderer} = require('electron')
+const {app, BrowserWindow, systemPreferences, ipcMain, webContents} = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path'); 
 
@@ -34,7 +34,7 @@ function createWindow(){
     })
 
     //dialog setting
-    ipcMain.on('electron-modal', (event) => {
+    ipcMain.on('electron-modal', (event, blob) => {
         //Modal Window Setting
         let modalWindow = new BrowserWindow({
             parent: win, // set child window
@@ -44,7 +44,7 @@ function createWindow(){
             modal: true, // when open child window, set parents window to untouchable
             titleBarStyle: 'hidden',
             webPreferences: {
-                preload: path.join(__dirname, 'renderer/preload.js')
+                preload: path.join(__dirname, 'renderer/preload.js'),
             }
         });
         //HTML File
@@ -53,19 +53,10 @@ function createWindow(){
 
         modalWindow.show();
         //Modal Closed Option
-        modalWindow.on('close', () => {
-            modalWindow = null;
-        })
-
+        modalWindow.on('close', () => { modalWindow = null; })
         ipcMain.on('electron-modal-value', (e, value) => {
-            if (value == null){
-                modalWindow.close();
-            }
-            else{
-                console.log("send?");
-                modalWindow.webContents.send('electron-modal-value-reply', value);
-                modalWindow.close();
-            }
+            modalWindow.close();
+            event.returnValue = value;
         })
     })
 

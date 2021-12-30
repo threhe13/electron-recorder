@@ -12,11 +12,11 @@
     const cancelBtn = document.getElementById('cancel');
     const submitBtn = document.getElementById('submit');
     function Cancel() {
-        api.send("electron-modal-value", null);
+        modal.send("electron-modal-value", null);
     }
     function Submit(){
         let name = document.getElementById('name').value.toString();
-        api.send("electron-modal-value", name);
+        modal.send("electron-modal-value", name);
     }
     cancelBtn.addEventListener('click', Cancel);
     submitBtn.addEventListener('click', Submit);
