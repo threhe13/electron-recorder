@@ -209,6 +209,9 @@ async function download(){
     let webm_file = global_buffer;
     let fileName = await utils.download(webm_file); //fileName == storage/[fileName]
     console.log(fileName);
+    if (fileName == null){
+        return;
+    }
 
     // Add file at list => move to list page -> preload
     let files = python.inference(path+fileName+type, fileName+wantedType);

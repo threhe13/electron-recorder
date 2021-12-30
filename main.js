@@ -10,6 +10,8 @@ function createWindow(){
             width: 400,
             height: 500,
             resizable: false,
+			fullscreenable: false,
+			maximizable: false,
             disableHtmlFullscreenWindowResize: true,
             webPreferences: {
                 //a security risk only when you're executing some untrusted remote code on your application.  
@@ -61,7 +63,7 @@ function createWindow(){
 
         modalWindow.show();
         //Modal Closed Option
-        modalWindow.on('close', () => { modalWindow = null; })
+        modalWindow.on('closed', () => { modalWindow = null; })
         ipcMain.on('electron-modal-value', (e, value) => {
             modalWindow.close();
             event.returnValue = value;

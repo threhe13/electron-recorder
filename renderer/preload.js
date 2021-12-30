@@ -129,10 +129,13 @@ contextBridge.exposeInMainWorld(
             let fileName = ipcRenderer.sendSync('electron-modal');
             let type = ".webm";
             
-            if (fileName == null){
+            if (fileName == ""){
                 let date = new Date();
                 let name = date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"-"+date.getHours()+"_"+date.getMinutes()+"_"+date.getSeconds();
                 fileName = name;
+            }
+            else if (fileName == null){
+                return;
             }
 
             // Append File in Directory
@@ -143,7 +146,7 @@ contextBridge.exposeInMainWorld(
                 fs.writeFile(path+fileName+type, buffer, (err, result) => {
                     if(err) { 
                         console.log("error:", err);
-                        return; // if occurs error, stop and return
+                        return null; // if occurs error, stop and return
                     }
                 });
             };
