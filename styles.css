@@ -1,114 +1,114 @@
 /* Common */
 .contents {
-    width: 100%;
-    text-align: center;
+  width: 100%;
+  text-align: center;
 }
 
 @media (prefers-color-scheme: dark) {
-    body { 
-        background: #2f3437; 
-        color: white; 
-    }
+  body {
+    background: #2f3437;
+    color: white;
+  }
 }
 
 @media (prefers-color-scheme: light) {
-    body { 
-        background: white; 
-        color: black; 
-    }
+  body {
+    background: white;
+    color: black;
+  }
 }
 
 body {
-    margin: 0 auto;
+  width: 400px;
+  margin: 0 auto;
 }
 
-
 img {
-    width: 50px;
-    height: auto;
+  width: 50px;
+  height: auto;
 }
 
 ul {
-    list-style: none;
-    padding-left: 0px;
+  list-style: none;
+  padding-left: 0px;
 }
 
 button {
-    margin: 0 auto;
-    padding: 0%;
-    border-style: none;
-    border-color: white;
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
+  margin: 0 auto;
+  padding: 0%;
+  border-style: none;
+  border-color: white;
+  color: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+
+button > img {
+  vertical-align: middle;
 }
 
 /* Title */
 .title {
-    width: 400px;
-    text-align: center;
-    position: relative;
+  width: 400px;
+  text-align: center;
+  display: inline-block;
+}
+
+#openList {
+  position: fixed;
+  top: 1.34em;
+  right: 15px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 0.8em;
+}
+
+#openList > img {
+  width: 30px;
+  height: 30px;
 }
 
 #waveform {
-    width: 400px;
-    height: 128px;
-    padding-bottom: 10px;
+  width: 400px;
+  height: 128px;
+  padding-bottom: 10px;
 }
 
 /* Body(Core) */
 .body {
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 #microphone {
-    user-select: none;
-    text-align: center;
+  user-select: none;
+  text-align: center;
 }
 
 button#save {
-    margin-left: 5px;
+  margin-left: 5px;
 }
 
 button#save > img {
-    width: 30px;
-    height: 30px;
+  width: 30px;
+  height: 30px;
 }
 
 button#PlayPause > img {
-    width: 30px;
-    height: 30px;
-}
-
-.list_overall {
-    width: 400px;
-    height: 150px;
-    overflow-y: scroll;
-}
-
-.list_overall > #list {
-    text-align: center;
-}
-
-.list_overall > #list > .list_child {
-    padding-top: 10px;
-    padding-bottom: 10px;
-    border-top: 2px solid #CED0CE;
-    border-bottom: 2px solid #CED0CE;
-    margin-top: -2px;
+  width: 30px;
+  height: 30px;
 }
 
 /* Footer */
 .footer {
-    height: 100px;
-    display: flex;
-    justify-content: center;
-    position: fixed;
-    bottom: 0;
+  width: inherit;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
 }
-
