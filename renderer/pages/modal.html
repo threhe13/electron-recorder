@@ -3,10 +3,18 @@
 <head>
     <meta charset="UTF-8">
 </head>
+<style>
+    #text {
+        font-size: 11px;
+    }
+</style>
 <body>
+    <p id="text">Please input name of file to save</p>
     <input type="text" id="name">
-    <button type="submit" id="cancel">Cancel</button>
-    <button type="submit" id="submit">Submit</button>
+    <div>
+        <button type="submit" id="cancel">Cancel</button>
+        <button type="submit" id="submit">Submit</button>
+    </div>
 </body>
 <script>
     const cancelBtn = document.getElementById('cancel');

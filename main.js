@@ -34,19 +34,27 @@ function createWindow(){
     })
 
     //dialog setting
-    ipcMain.on('electron-modal', (event, blob) => {
+    ipcMain.on('electron-modal', (event) => {
         //Modal Window Setting
         let modalWindow = new BrowserWindow({
             parent: win, // set child window
+            title: "Save file",
             width: 300,
             height: 100,
+            minimizable: false,
+			fullscreenable: false,
+			maximizable: false,
             resizable: false,
+            skipTaskbar: true,
             modal: true, // when open child window, set parents window to untouchable
-            titleBarStyle: 'hidden',
+            // titleBarStyle: 'hidden',
             webPreferences: {
                 preload: path.join(__dirname, 'renderer/preload.js'),
             }
         });
+
+        modalWindow.setMenu(null);
+		modalWindow.setMenuBarVisibility(false);
         //HTML File
         const modalHtml = path.join(__dirname, 'renderer/pages/modal.html');
         modalWindow.loadFile(modalHtml);

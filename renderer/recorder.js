@@ -211,8 +211,8 @@ async function download(){
     console.log(fileName);
 
     // Add file at list => move to list page -> preload
-    // let files = python.inference(path+fileName+type, fileName+wantedType);
-    // console.log(files); // file name saved in directory that is type wav
+    let files = python.inference(path+fileName+type, fileName+wantedType);
+    console.log(files); // file name saved in directory that is type wav
 }
 
 function aDownload(blob){

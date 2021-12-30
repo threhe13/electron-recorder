@@ -128,10 +128,6 @@ contextBridge.exposeInMainWorld(
             // Setting Name saved file
             let fileName = ipcRenderer.sendSync('electron-modal');
             let type = ".webm";
-            // ipcRenderer.sendSync('electron-modal');
-            // ipcRenderer.on('electron-modal-value-reply', (e, name) => {
-                
-            // })
             
             if (fileName == null){
                 let date = new Date();
