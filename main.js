@@ -26,9 +26,9 @@ function createWindow(){
     win.loadFile(path.join(__dirname, 'index.html'))
     
     // open DevTool option
-    if (isDev) {
-        win.webContents.openDevTools()
-    }
+    // if (isDev) {
+    //     win.webContents.openDevTools()
+    // }
 
     // event when window closed
     win.on('closed', () => {
@@ -86,7 +86,7 @@ function createWindow(){
         fileList.setMenu(null);
 		fileList.setMenuBarVisibility(false);
         fileList.loadFile(path.join(__dirname, 'renderer/pages/fileList.html'));
-        fileList.webContents.openDevTools() // for debugging
+        // fileList.webContents.openDevTools() // for debugging
 
         fileList.on('ready-to-show', () => {
             fileList.show();
