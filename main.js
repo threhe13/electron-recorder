@@ -109,6 +109,7 @@ function createWindow(){
 /* Electron */
 app.whenReady().then(() => {
     createWindow();
+    if (process.platform == 'darwin') app.dock.setIcon(path.join(__dirname, "assets", "icon", "dhlogo.png"));
 })
 
 app.on('activate', () => {
