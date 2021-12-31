@@ -5,8 +5,11 @@ inference/
 storage/
 
 # File #
-.renderer/renderer.js
-.DS_Store
-.package-lock.json
-.package.json
-.yarn.lock
+renderer/renderer.js
+DS_Store
+package-lock.json
+package.json
+yarn.lock
+
+# Image #
+assets/icon/dhlogo.png

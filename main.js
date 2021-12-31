@@ -13,6 +13,7 @@ function createWindow(){
 			fullscreenable: false,
 			maximizable: false,
             disableHtmlFullscreenWindowResize: true,
+            icon: path.join(__dirname, "assets", "icon", "dhlogo.png"),
             webPreferences: {
                 //a security risk only when you're executing some untrusted remote code on your application.  
                 // nodeIntegration: true, 
@@ -49,6 +50,7 @@ function createWindow(){
 			maximizable: false,
             resizable: false,
             skipTaskbar: true,
+            icon: path.join(__dirname, "assets", "icon", "dhlogo.png"),
             modal: true, // when open child window, set parents window to untouchable
             // titleBarStyle: 'hidden',
             webPreferences: {
@@ -78,6 +80,7 @@ function createWindow(){
         fileList = new BrowserWindow({
             width: 400,
             height: 500,
+            icon: path.join(__dirname, "assets", "icon", "dhlogo.png"),
             webPreferences: {
                 preload: path.join(__dirname, 'renderer/preload.js'),
             },

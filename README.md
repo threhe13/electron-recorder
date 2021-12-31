@@ -55,4 +55,4 @@ Also can install <code>electron-quick-start</code> uploaded on <a href="https://
 - electron-is-dev@2.0.0 <code>npm install electron-is-dev</code>
 - electron-builder@22.13.1 <code>npm install electron-builder</code>
 - wavesurfer.js@5.2.0 <code>npm install wavesurfer.js --save</code>
-- tensorflow.js@3.11.0 <code>npm install @tensorflow/tfjs</code>
+- ~~tensorflow.js@3.11.0 <code>npm install @tensorflow/tfjs</code>~~
