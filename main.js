@@ -86,6 +86,7 @@ function createWindow(){
         fileList.setMenu(null);
 		fileList.setMenuBarVisibility(false);
         fileList.loadFile(path.join(__dirname, 'renderer/pages/fileList.html'));
+        fileList.webContents.openDevTools()
 
         fileList.on('ready-to-show', () => {
             fileList.show();

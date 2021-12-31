@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
     <title>File List</title>
 </head>
 <style>
@@ -95,10 +96,12 @@
     let type = [".webm", ".wav"]; //Audio type
     let downArrowPath = "../../assets/image/down-arrow.png";
 
+    let targetG;
     //down arrow click event
     function wave(e){
         let target = e.target;
-        // console.log(target);
+        console.log(target);
+        targetG = target;
         let targetTag = target.tagName;
         // console.log(targetTag);
         
@@ -109,20 +112,20 @@
         //target is "SPAN"
         if (targetTag === "SPAN"){
             fileName = target.innerText;
-            imageElement = target.parentNode.childNodes[3];
+            imageElement = target.parentNode.childNodes[1];
             liElement = target.parentNode;
             // console.log(fileName);
         }
         //target is "LI"
         else if (targetTag === "LI"){
-            fileName = target.childNodes[1].innerText; // Span Node
-            imageElement = target.childNodes[3];
+            fileName = target.childNodes[0].innerText; // Span Node
+            imageElement = target.childNodes[1];
             liElement = target;
             // console.log(fileName);
         }
         //target is "IMG"
         else if (targetTag === "IMG"){
-            fileName = target.parentNode.childNodes[1].innerText;
+            fileName = target.parentNode.childNodes[0].innerText;
             imageElement = target;
             liElement = target.parentNode;
             // console.log(fileName);
@@ -131,9 +134,13 @@
             return;
         }
 
+        console.log(fileName);
+        console.log(imageElement);
+        console.log(liElement);
+
         // add image animation
         checkUp(imageElement);
-        openDiv(liElement, fileName);
+        openDiv(liElement);
     }
 
     function checkUp(imageElement){
@@ -151,15 +158,13 @@
     }
 
     function openDiv(liElement){
-        let audioBox = liElement.childNodes[5];
+        let audioBox = liElement.childNodes[2];
         if(audioBox.style.display === "block"){
             audioBox.style.display = "none";
         }
         else{
             audioBox.style.display = "block";
         }
-
-
     }
 
     function addLiElement(fileName){

@@ -184,6 +184,7 @@ contextBridge.exposeInMainWorld(
 
             // Read files in "storage" folder
             // listElement.innerHTML = "";
+            let inputPath = "../../storage/"
             fs.readdir(path, (err, fileList) => {
                 if(err) console.log("error:", err);
                 // Set return value
@@ -197,9 +198,14 @@ contextBridge.exposeInMainWorld(
                     let imgElement = document.createElement('img');
                     imgElement.setAttribute('src', downArrowPath);
 
-                    //div
+                    // div
                     let divElement = document.createElement('div');
                     divElement.classList.add('audio');
+
+                    let audioElement = document.createElement('audio');
+                    audioElement.setAttribute("src", inputPath+element.toString()) ;
+                    audioElement.setAttribute("controls", "controls")
+                    divElement.appendChild(audioElement);
 
                     liElement.classList.add('childList');
                     liElement.appendChild(spanElement)
