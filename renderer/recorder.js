@@ -104,7 +104,7 @@ function handleStop(){
     let blob = new Blob(chunks, {"type": mimeType});
     let audioURL = URL.createObjectURL(blob);
     global_buffer = blob;
-    waveVisualize(audioURL);
+    wave.atMain(audioURL);
     chunks.pop(); // chunks = [Blob]
 }
 
@@ -249,7 +249,7 @@ let addList = (fileName) => {
         let target = e.target;
         // console.log(target) == <span>fileName</span>
         // console.log(target.tagName);
-        if(target.tagName === "SPAN") waveVisualize(fileName);
+        if(target.tagName === "SPAN") wave.atMain(fileName);
     });
     liElement.appendChild(spanElement);
     listDiv.appendChild(liElement);

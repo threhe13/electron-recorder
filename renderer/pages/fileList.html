@@ -75,8 +75,9 @@
 
     .audio {
         display: none;
+        padding-top: 1.37em;
         width: 100%;
-        height: 300px;
+        height: 200px;
         transition: height 0.5s;
     }
 </style>
@@ -91,17 +92,15 @@
 
     //HTML components
 
-
     // Basic Setting
     let type = [".webm", ".wav"]; //Audio type
     let downArrowPath = "../../assets/image/down-arrow.png";
+    let filePath = "../../storage/"
 
-    let targetG;
     //down arrow click event
-    function wave(e){
+    function eventAni(e){
         let target = e.target;
-        console.log(target);
-        targetG = target;
+        // console.log(target);
         let targetTag = target.tagName;
         // console.log(targetTag);
         
@@ -134,13 +133,14 @@
             return;
         }
 
-        console.log(fileName);
-        console.log(imageElement);
-        console.log(liElement);
+        // console.log(fileName);
+        // console.log(imageElement);
+        // console.log(liElement);
 
         // add image animation
         checkUp(imageElement);
         openDiv(liElement);
+        wave.atList(filePath+fileName, liElement.childNodes[2]);
     }
 
     function checkUp(imageElement){
@@ -195,7 +195,7 @@
     }
 
     // Add event
-    listElement.addEventListener('click', wave);
+    listElement.addEventListener('click', eventAni);
     
 </script>
 </html>
