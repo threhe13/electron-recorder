@@ -1,18 +1,14 @@
-# Electron-dev
+# Electron Recorder
 
 Desktop Application included Speech Enhancement Model<br>
-
-## Caution
-
-this project is still under development
 
 ## Demo
 
 <p align="center">
     <!-- Getting Ready... -->
-    <img src="./assets/images/demo7.png" alt="demo" width="320px">
-    <img src="./assets/images/demo7_list.png" alt="demo" width="320px">
-    <img src="./assets/images/demo7_file.png" alt="demo" width="320px">
+    <img src="./assets/images/demo7.png" alt="demo" width="200px">
+    <img src="./assets/images/demo7_list.png" alt="demo" width="200px">
+    <img src="./assets/images/demo7_file.png" alt="demo" width="200px">
 </p>
 
 ## Reference
